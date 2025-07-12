@@ -215,4 +215,4 @@ These contracts are deployed on BSC Testnet for testing purposes:
 
 ## License
 
-MIT License - see LICENSE file for details
+Proprietary License - see LICENSE.md file for details. This software is the exclusive property of Finatrades.
