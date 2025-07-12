@@ -8,7 +8,7 @@ typechain-types
 # Hardhat files
 cache
 artifacts
-README.md
+DEV_README.md
 
 # VS Code
 .vscode
