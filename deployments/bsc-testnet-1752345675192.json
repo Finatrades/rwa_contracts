@@ -1,0 +1,33 @@
+{
+  "network": "BSC Testnet",
+  "chainId": "97",
+  "deploymentDate": "2025-07-12T18:41:15.191Z",
+  "contracts": {
+    "timelock": {
+      "address": "0x90c02646D2aC337082b0058158954Cb8dFF62985",
+      "minDelay": 172800,
+      "proposers": [
+        "0xCE982AC6bc316Cf9d875652B84C7626B62a899eA",
+        "0xCE982AC6bc316Cf9d875652B84C7626B62a899eA",
+        "0xCE982AC6bc316Cf9d875652B84C7626B62a899eA"
+      ],
+      "executors": [
+        "0xCE982AC6bc316Cf9d875652B84C7626B62a899eA",
+        "0xCE982AC6bc316Cf9d875652B84C7626B62a899eA",
+        "0xCE982AC6bc316Cf9d875652B84C7626B62a899eA"
+      ]
+    },
+    "finatradesRWA": {
+      "proxy": "0xd8Fd81832daFd721ac5f1Ab21b8e78e1AaaaAE4c",
+      "implementation": "0x3eAf6dC0C7D7C82C6f650b407F899E85Ea880487",
+      "admin": "0xCE982AC6bc316Cf9d875652B84C7626B62a899eA",
+      "name": "Finatrades RWA Token",
+      "symbol": "FRWA"
+    }
+  },
+  "explorerLinks": {
+    "timelock": "https://testnet.bscscan.com/address/0x90c02646D2aC337082b0058158954Cb8dFF62985",
+    "proxy": "https://testnet.bscscan.com/address/0xd8Fd81832daFd721ac5f1Ab21b8e78e1AaaaAE4c",
+    "implementation": "https://testnet.bscscan.com/address/0x3eAf6dC0C7D7C82C6f650b407F899E85Ea880487"
+  }
+}

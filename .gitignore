@@ -1,0 +1,27 @@
+node_modules
+.env
+coverage
+coverage.json
+typechain
+typechain-types
+
+# Hardhat files
+cache
+artifacts
+README.md
+
+# VS Code
+.vscode
+
+# Mac
+.DS_Store
+
+# Gas reports
+gasReporterOutput.json
+
+# Deployments
+deployments/localhost
+deployments/hardhat
+
+# ABI file
+abi.txt
