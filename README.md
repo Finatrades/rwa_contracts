@@ -171,7 +171,6 @@ These contracts are deployed on BSC Testnet for testing purposes:
 1. **Contract Size**: Full ERC-1400 implementation exceeds Ethereum mainnet limits but works on BSC
 2. **Jurisdiction Updates**: Adding new jurisdictions requires governance action
 3. **Dividend Precision**: May lose small amounts due to rounding
-4. **Scalability**: Limited to 10,000 token holders
 
 ## Audit Checklist
 
