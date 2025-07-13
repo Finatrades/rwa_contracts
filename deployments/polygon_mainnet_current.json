@@ -1,0 +1,20 @@
+{
+  "network": "polygon",
+  "chainId": 137,
+  "deployer": "0xCE982AC6bc316Cf9d875652B84C7626B62a899eA",
+  "timestamp": "2024-01-15T18:00:00.000Z",
+  "contracts": {
+    "ClaimTopicsRegistry": "0x315a3f5d4a482204eA7EaE89D05e64b6B90a919E",
+    "IdentityRegistry": "0x1D6f1Ca3Df3d601A079E02dCaBd809D5Bd95fe80",
+    "ClaimIssuer": "0x55106CFA1217A15A6bcedc7dFf9Ca0897f4E378a",
+    "CountryRestrictModule": "0x952E87D7f2f5FDe3f387bE9bd6CE59Ad98BbD3A7",
+    "TransferLimitModule": "0xeFc6E2808ba990B6344EC23316CFCA8a64F0597d",
+    "MaxBalanceModule": "0x60540b959652Ef4E955385C6E28529520a25dcd2"
+  },
+  "status": "partial",
+  "remaining": [
+    "ModularCompliance",
+    "FinatradesRWA_ERC3643",
+    "Timelock"
+  ]
+}

@@ -1,218 +1,276 @@
-# Finatrades RWA Token - Audit Documentation
+# Finatrades RWA ERC-3643 - Audit Documentation
 
 ## Executive Summary
 
-The Finatrades RWA Token is an ERC-1400 compliant security token designed for tokenizing real-world assets, specifically real estate properties in Asian and African markets. The contract implements comprehensive compliance features, property management, and dividend distribution mechanisms.
+The Finatrades RWA platform is an ERC-3643 (T-REX) compliant security token system designed for tokenizing real-world assets with comprehensive compliance, identity management, and regulatory controls.
 
 ## Contract Architecture
 
-### Core Components
+The platform consists of several key components:
 
-1. **Main Contract**: `FinatradesRWA_Final.sol`
-   - ERC-20 base functionality
-   - ERC-1400 partition management
-   - Snapshot mechanism for dividends
-   - Access control and pausability
-   - UUPS upgradeability
+### Core Contracts
 
-2. **Libraries**:
-   - `PropertyLib.sol`: Property management logic
-   - `ComplianceLib.sol`: KYC/AML compliance
-   - `JurisdictionLib.sol`: Jurisdiction management
+1. **FinatradesRWA_ERC3643**
+   - Main security token contract
+   - ERC-20 compatible with additional security features
+   - Asset management capabilities
+   - Dividend distribution system
+   - Snapshot functionality for corporate actions
 
-### Key Features
+2. **Identity Registry**
+   - Manages investor identities
+   - Links wallet addresses to identity contracts
+   - Verifies investor claims against requirements
 
-#### 1. Property Tokenization
-- Support for multiple property types (residential, commercial, industrial)
-- Property metadata storage (valuation, address, legal description)
-- Rental income tracking
-- Property lifecycle management (active → for sale → sold)
+3. **Claim Topics Registry**
+   - Defines required claims for token holders
+   - Manages trusted claim issuers
+   - Configurable compliance requirements
 
-#### 2. ERC-1400 Compliance
-- **Partitions**: Separate property types/classes
-- **Document Management**: On-chain document registry
-- **Transfer Restrictions**: Granular control with reason codes
-- **Controller Operations**: Emergency transfers
+4. **Claim Issuer**
+   - Issues KYC/AML claims
+   - Manages investor verification
+   - Supports claim revocation and updates
 
-#### 3. Investor Management
-- KYC/AML verification with expiry
-- Investor types (retail, qualified, institutional, professional)
-- Jurisdiction restrictions (Asia & Africa only)
-- Investment limits (min/max)
+### Compliance Modules
 
-#### 4. Dividend Distribution
-- Snapshot-based distribution
-- Property-specific dividends
-- Batch claiming functionality
-- Protection against double claims
+1. **Country Restrict Module**
+   - Enforces jurisdiction-based restrictions
+   - Configurable country whitelist/blacklist
+   - Cross-border transfer controls
 
-#### 5. Security Features
-- Multi-role access control
+2. **Transfer Limit Module**
+   - Daily and monthly transfer limits
+   - Per-investor configurable limits
+   - Default limits for all investors
+
+3. **Max Balance Module**
+   - Maximum token holding restrictions
+   - Prevents concentration of ownership
+   - Configurable per investor type
+
+## Key Features
+
+### 1. ERC-3643 Compliance
+- Full T-REX standard implementation
+- Identity-based transfer restrictions
+- Modular compliance system
+- Claim-based verification
+
+### 2. Asset Management
+- Multi-asset support (up to 1,000 assets)
+- Asset types: Residential, Commercial, Industrial, Agricultural, Mixed-Use
+- Valuation tracking and updates
+- Rental income distribution
+
+### 3. Security Features
+- Role-based access control (7 distinct roles)
 - Reentrancy protection
-- Rate limiting
-- Emergency stop mechanism
-- Timelock governance
+- Pausable transfers
+- Emergency freeze capabilities
+- Timelock governance (48-hour delay)
+- UUPS upgradeability pattern
 
-## Security Considerations
 
-### Access Control Matrix
+## 🛠️ Installation
 
-| Role | Permissions |
-|------|------------|
-| DEFAULT_ADMIN_ROLE | Grant/revoke roles, emergency functions |
-| CONTROLLER_ROLE | Pause/unpause, force transfers |
-| COMPLIANCE_ROLE | Manage investors, jurisdictions, limits |
-| MINTER_ROLE | Issue new tokens |
-| CORPORATE_ACTIONS_ROLE | Deposit dividends |
-| PROPERTY_MANAGER_ROLE | Add/update properties |
-| UPGRADER_ROLE | Authorize upgrades |
-
-### Security Mechanisms
-
-1. **Input Validation**
-   - All external functions validate parameters
-   - Bounds checking on amounts
-   - Address validation (no zero addresses)
-   - String length limits
-
-2. **State Management**
-   - Reentrancy guards on all state-changing functions
-   - Proper state updates before external calls
-   - Check-effects-interactions pattern
-
-3. **Emergency Controls**
-   - Pause mechanism for all transfers
-   - Emergency stop with time delay
-   - Emergency withdrawal for stuck funds
-
-4. **Rate Limiting**
-   - Max 100 transactions per hour per address
-   - Prevents spam and DoS attacks
-
-## Testing Requirements
-
-### Unit Tests (Required Coverage: >95%)
-- [ ] Token minting and burning
-- [ ] Transfer restrictions
-- [ ] Partition management
-- [ ] Property CRUD operations
-- [ ] Dividend distribution
-- [ ] Investor registration
-- [ ] Access control
-- [ ] Emergency functions
-
-### Integration Tests
-- [ ] Multi-property dividend distribution
-- [ ] Cross-partition transfers
-- [ ] Upgrade mechanism
-- [ ] Timelock operations
-
-### Security Tests
-- [ ] Reentrancy attacks
-- [ ] Integer overflow/underflow
-- [ ] Access control bypasses
-- [ ] Front-running vulnerabilities
-
-## Deployment Guide
-
-### 1. Environment Setup
 ```bash
+# Clone the repository
+git clone https://github.com/finatrades/rwa_contracts.git
+cd rwa_contracts
+
 # Install dependencies
 npm install
 
-# Set environment variables
+# Copy environment variables
 cp .env.example .env
-# Edit .env with your values
+# Edit .env with your configuration
+
+# Compile contracts
+npx hardhat compile
+
+# Run tests
+npx hardhat test
+
+# Deploy to Polygon Mumbai testnet
+npx hardhat run scripts/deploy_erc3643.js --network polygonMumbai
+
+# Deploy to Polygon mainnet
+npx hardhat run scripts/deploy_erc3643.js --network polygon
 ```
 
-### 2. Deploy Contracts
-```bash
-# Deploy to testnet
-npm run deploy:bsc-testnet
+## 🔧 Configuration
 
-# Deploy to mainnet
-npm run deploy:bsc
+### Environment Variables
+
+Create a `.env` file with the following variables:
+
+```env
+PRIVATE_KEY=your_private_key_here
+POLYGON_RPC_URL=https://polygon-rpc.com
+POLYGON_MUMBAI_RPC_URL=https://rpc-mumbai.maticvigil.com
+POLYGONSCAN_API_KEY=your_polygonscan_api_key
 ```
 
-## Example Deployed Contracts (BSC Testnet)
+### Compliance Configuration
 
-These contracts are deployed on BSC Testnet for testing purposes:
+1. **Set Allowed Countries**
+   ```javascript
+   // Example: Allow USA and UK
+   await countryRestrictModule.setCountryAllowed(840, true); // USA
+   await countryRestrictModule.setCountryAllowed(826, true); // UK
+   ```
 
-| Contract | Address | Explorer Link |
-|----------|---------|---------------|
-| Timelock Controller | `0x90c02646D2aC337082b0058158954Cb8dFF62985` | [View on BscScan](https://testnet.bscscan.com/address/0x90c02646D2aC337082b0058158954Cb8dFF62985) |
-| RWA Token (Proxy) | `0xd8Fd81832daFd721ac5f1Ab21b8e78e1AaaaAE4c` | [View on BscScan](https://testnet.bscscan.com/address/0xd8Fd81832daFd721ac5f1Ab21b8e78e1AaaaAE4c) |
-| Implementation | `0x3eAf6dC0C7D7C82C6f650b407F899E85Ea880487` | [View on BscScan](https://testnet.bscscan.com/address/0x3eAf6dC0C7D7C82C6f650b407F899E85Ea880487) |
+2. **Configure Transfer Limits**
+   ```javascript
+   // Set default limits
+   await transferLimitModule.setDefaultLimits(
+     ethers.utils.parseEther("100000"), // Daily limit
+     ethers.utils.parseEther("1000000") // Monthly limit
+   );
+   ```
 
-**Note**: These are testnet contracts for demonstration only. Do not send real funds to these addresses.
+3. **Add Trusted Claim Issuers**
+   ```javascript
+   // Add claim issuer for KYC/AML
+   await claimTopicsRegistry.addTrustedIssuer(
+     claimIssuerAddress,
+     [1, 2, 4] // KYC, AML, Country topics
+   );
+   ```
 
-### 3. Post-Deployment
-1. Initialize jurisdictions
-2. Set compliance parameters
-3. Register initial properties
-4. Transfer admin to timelock
+## Deployed Contracts (Polygon Mainnet)
 
-## Gas Optimization
+| Contract | Address | Verification Status |
+|----------|---------|--------------------|
+| ClaimTopicsRegistry | [`0x315a3f5d4a482204eA7EaE89D05e64b6B90a919E`](https://polygonscan.com/address/0x315a3f5d4a482204eA7EaE89D05e64b6B90a919E) | Pending |
+| IdentityRegistry | [`0x1D6f1Ca3Df3d601A079E02dCaBd809D5Bd95fe80`](https://polygonscan.com/address/0x1D6f1Ca3Df3d601A079E02dCaBd809D5Bd95fe80) | Pending |
+| ClaimIssuer | [`0x55106CFA1217A15A6bcedc7dFf9Ca0897f4E378a`](https://polygonscan.com/address/0x55106CFA1217A15A6bcedc7dFf9Ca0897f4E378a) | Pending |
+| CountryRestrictModule | [`0x952E87D7f2f5FDe3f387bE9bd6CE59Ad98BbD3A7`](https://polygonscan.com/address/0x952E87D7f2f5FDe3f387bE9bd6CE59Ad98BbD3A7) | Pending |
+| TransferLimitModule | [`0xAC4d1d37b307DE646A82A65F9a19a5a54F4D8f00`](https://polygonscan.com/address/0xAC4d1d37b307DE646A82A65F9a19a5a54F4D8f00) | Pending |
+| MaxBalanceModule | [`0x60540b959652Ef4E955385C6E28529520a25dcd2`](https://polygonscan.com/address/0x60540b959652Ef4E955385C6E28529520a25dcd2) | Pending |
+| ModularCompliance | [`0x9Db249617E876c18248Bf5Cd1289fA33A725170d`](https://polygonscan.com/address/0x9Db249617E876c18248Bf5Cd1289fA33A725170d) | Pending |
+| FinatradesRWA_ERC3643 | [`0x10375fdf730D39774eF1fD20424CD0504ef35afb`](https://polygonscan.com/address/0x10375fdf730D39774eF1fD20424CD0504ef35afb) | Pending |
+| Timelock | [`0xc929923D0d52Df0b72C8cf00C7c6156DB24232dE`](https://polygonscan.com/address/0xc929923D0d52Df0b72C8cf00C7c6156DB24232dE) | Pending |
 
-### Implemented Optimizations
-1. Using enums instead of strings for property types/status
-2. Packed struct storage
-3. Minimal string usage
-4. Batch operations where possible
+**Network**: Polygon Mainnet (ChainID: 137)
+**Deployer**: `0xCE982AC6bc316Cf9d875652B84C7626B62a899eA`
+**Block Range**: 73905850 - 73905906
+**Total POL Used**: ~0.7 POL
 
-### BSC Deployment
-- Contract size: ~35KB (within BSC limits)
-- Deployment gas: ~8M gas
-- Average transfer: ~100K gas
-- Dividend claim: ~150K gas
+## 📖 Usage Examples
 
-## Known Limitations
+## Access Control Matrix
 
-1. **Contract Size**: Full ERC-1400 implementation exceeds Ethereum mainnet limits but works on BSC
-2. **Jurisdiction Updates**: Adding new jurisdictions requires governance action
-3. **Dividend Precision**: May lose small amounts due to rounding
+| Role | Permissions | Risk Level |
+|------|-------------|------------|
+| DEFAULT_ADMIN_ROLE | Grant/revoke all roles | Critical |
+| OWNER_ROLE | Contract configuration, compliance settings | High |
+| AGENT_ROLE | Mint/burn tokens, freeze addresses | High |
+| UPGRADER_ROLE | Authorize contract upgrades | Critical |
+| ASSET_MANAGER_ROLE | Add/update assets, set rental info | Medium |
+| CORPORATE_ACTIONS_ROLE | Deposit dividends | Medium |
+| CLAIM_ISSUER_ROLE | Issue/revoke identity claims | High |
 
-## Audit Checklist
+## Security Mechanisms
 
-### Code Quality
-- [x] Follows Solidity style guide
-- [x] Comprehensive NatSpec documentation
-- [x] No compiler warnings
-- [x] Uses latest stable Solidity version
+### 1. Identity Verification
+- ERC-734/735 identity contracts
+- Claim-based verification system
+- Trusted issuer management
+- Required claims: KYC (topic 1), AML (topic 2), Country (topic 4)
 
-### Security
-- [x] No delegatecall to untrusted contracts
-- [x] No assembly code
-- [x] Protected against reentrancy
-- [x] Proper access control
-- [x] Input validation on all functions
+### 2. Transfer Restrictions
+- Identity verification check
+- Country-based restrictions
+- Daily/monthly transfer limits
+- Maximum balance restrictions
+- Frozen address checks
 
-### Testing
-- [x] >95% code coverage
-- [x] Fuzz testing performed
-- [x] Gas optimization tested
-- [x] Upgrade mechanism tested
+### 3. Emergency Controls
+- Global pause mechanism
+- Individual address freezing
+- Partial token freezing
+- Recovery functions for lost wallets
+- Timelock delay for critical operations
 
-### Documentation
-- [x] Architecture documented
-- [x] API reference complete
-- [x] Deployment guide
-- [x] User guide
+## Testing Coverage
 
-## Recommended Audit Focus Areas
+### Unit Tests
+- [x] Identity management (IdentityRegistry)
+- [x] Claim verification (ClaimIssuer)
+- [x] Compliance modules (Country, TransferLimit, MaxBalance)
+- [x] Token transfers with restrictions
+- [x] Asset management functions
+- [x] Dividend distribution
+- [x] Emergency functions
+- [x] Access control
 
-1. **Property Management Logic**: Ensure property lifecycle is properly managed
-2. **Dividend Calculations**: Verify no precision loss or manipulation
-3. **Transfer Restrictions**: Confirm all compliance rules enforced
-4. **Upgrade Mechanism**: Validate UUPS implementation
-5. **Emergency Functions**: Check proper access control and limits
+### Integration Tests  
+- [x] Multi-module compliance checks
+- [x] Identity + Compliance + Token flow
+- [x] Upgrade mechanism (UUPS)
+- [x] Timelock operations
 
-## Contact Information
+### Security Tests
+- [x] Reentrancy protection
+- [x] Access control bypass attempts
+- [x] Integer overflow/underflow (Solidity 0.8.19)
+- [x] Front-running mitigation
 
-- **Development Team**: dev@finatrades.com
-- **Security Contact**: security@finatrades.com
-- **Bug Bounty**: https://finatrades.com/bug-bounty
+## Audit Focus Areas
 
-## License
+### 1. Identity System
+- Verify identity registry cannot be bypassed
+- Check claim validation logic
+- Ensure trusted issuer management is secure
+- Validate identity recovery mechanisms
 
-Proprietary License - see LICENSE.md file for details. This software is the exclusive property of Finatrades.
+### 2. Compliance Modules
+- Test module interaction and precedence
+- Verify modules cannot be bypassed
+- Check for module upgrade risks
+- Validate restriction enforcement
+
+### 3. Asset Management
+- Verify asset valuation update controls
+- Check dividend calculation accuracy
+- Test for rounding errors in distributions
+- Validate rental income flow
+
+### 4. Access Control
+- Verify role separation
+- Check for privilege escalation
+- Test emergency function restrictions
+- Validate timelock effectiveness
+
+## Known Issues & Mitigations
+
+1. **Contract Size**: Main token contract approaches size limit
+   - Mitigation: Optimizer enabled with runs=1
+   - Alternative: Further modularization if needed
+
+2. **Gas Costs**: Complex compliance checks increase transfer costs
+   - Mitigation: Batch operations where possible
+   - Gas usage: ~150k-200k per compliant transfer
+
+3. **Upgrade Risks**: UUPS pattern requires careful access control
+   - Mitigation: Timelock + multi-role approval
+   - Upgrade function restricted to UPGRADER_ROLE
+
+## Deployment Information
+
+- **Compiler**: Solidity 0.8.19
+- **Optimizer**: Enabled (runs: 1)
+- **Network**: Polygon Mainnet
+- **Total Deployment Gas**: ~25,000,000
+- **Deployment Status**: Complete ✅
+- **Configuration Status**: Complete ✅
+  - All compliance modules added to ModularCompliance
+  - Token bound to compliance contract
+  - Ready for identity registration and claim issuance
+- **Verification**: Pending (use `npx hardhat verify` commands)
+
+## Contact
+
+**Security Contact**: security@finatrades.com

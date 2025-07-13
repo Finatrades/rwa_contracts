@@ -1,6 +1,6 @@
 # PROPRIETARY SOFTWARE LICENSE
 
-Copyright (c) 2024 Finatrades. All rights reserved.
+Copyright (c) 2025 Finatrades. All rights reserved.
 
 ## NOTICE TO ALL PERSONS ACCESSING THIS SOFTWARE
 

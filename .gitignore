@@ -2,13 +2,13 @@ node_modules
 .env
 coverage
 coverage.json
+lcov.info
 typechain
 typechain-types
 
 # Hardhat files
 cache
 artifacts
-DEV_README.md
 
 # VS Code
 .vscode
@@ -19,9 +19,15 @@ DEV_README.md
 # Gas reports
 gasReporterOutput.json
 
-# Deployments
+# Local deployments
 deployments/localhost
 deployments/hardhat
 
-# ABI file
-abi.txt
+# Temporary files
+*.tmp
+*.log
+
+# Test coverage
+coverage/
+coverage.json
+lcov.info
