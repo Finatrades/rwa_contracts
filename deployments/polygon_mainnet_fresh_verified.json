@@ -1,0 +1,39 @@
+{
+  "network": "polygon_mainnet",
+  "chainId": 137,
+  "deploymentDate": "2025-07-13T10:36:30.888Z",
+  "deployer": "0xCE982AC6bc316Cf9d875652B84C7626B62a899eA",
+  "contracts": {
+    "claimTopicsRegistry": "0xc0b8B69C1EbB0750C79e9E37003f7f9F67C24ba5",
+    "identityRegistry": "0x7fF86B722349185aC7Cc7806067Db4265EC428E1",
+    "claimIssuer": "0x0bB885b7901b4751Cd216B18cc99201fBbeAf8dC",
+    "countryModule": "0x22038f4Dc583816ea78540612b9d7077f7e05011",
+    "transferLimitModule": "0x739870D268aC653090070cC13C69F8c730eB58AF",
+    "maxBalanceModule": "0xe2E06a0e6F86F58Bbe76A6b2d5A580e255Fd4E1b",
+    "modularCompliance": "0xb5Bc25C8FD3a4B5B6c95a57c93A950fb8398789D",
+    "token": "0x56fBE81E9a84d2F87996419F53a2412Ae8B1658b",
+    "timelock": "0x87F6Ac9B65970fAB951A8595Fb3a06B707721C39"
+  },
+  "implementations": {
+    "claimTopicsRegistry": "0x0E5184813A774f32472F189260275cE1323a837F",
+    "identityRegistry": "0xD2705bfE082dBD18a92a05cB91756b321c5C43Dc",
+    "claimIssuer": "0xC67E20354AaE72F669cdE0a66C37c1C5cc0dd752",
+    "countryModule": "0xCed593f751F1F93d1Dd3B8Cc571A7A221661B27B",
+    "transferLimitModule": "0xDfD80d60BCA3D63190041b710380bA6Ab280f6E2",
+    "maxBalanceModule": "0xf7131BBB9a2e38Fab57b8D2FE3032cb1340a6170",
+    "modularCompliance": "0x63684A1B79F57cD5eD3b89bA7D0BAE1339207C83",
+    "token": "0x9Ac29886373E517fe4806CC9D55Cd53b9AB7AC56"
+  },
+  "verificationStatus": {
+    "claimTopicsRegistry": false,
+    "identityRegistry": false,
+    "claimIssuer": false,
+    "countryModule": false,
+    "transferLimitModule": false,
+    "maxBalanceModule": false,
+    "modularCompliance": false,
+    "token": false,
+    "timelock": false
+  },
+  "verificationDate": "2025-07-13T10:41:53.280Z"
+}

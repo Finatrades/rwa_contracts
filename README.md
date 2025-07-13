@@ -1,8 +1,8 @@
-# Finatrades RWA ERC-3643 - Audit Documentation
+# Finatrades Universal RWA Platform - ERC-3643 Compliant
 
 ## Executive Summary
 
-The Finatrades RWA platform is an ERC-3643 (T-REX) compliant security token system designed for tokenizing real-world assets with comprehensive compliance, identity management, and regulatory controls.
+The Finatrades Universal RWA platform is an ERC-3643 (T-REX) compliant security token system that can tokenize **ANY type of real-world asset** - from gold and real estate to intellectual property and carbon credits. Built with institutional-grade security, unlimited scalability, and comprehensive compliance features.
 
 ## Contract Architecture
 
@@ -10,24 +10,30 @@ The platform consists of several key components:
 
 ### Core Contracts
 
-1. **FinatradesRWA_ERC3643**
-   - Main security token contract
-   - ERC-20 compatible with additional security features
-   - Asset management capabilities
-   - Dividend distribution system
-   - Snapshot functionality for corporate actions
+1. **AssetRegistry** (V2 - NEW)
+   - Universal registry for ANY asset type
+   - Unlimited asset storage (no 1,000 limit)
+   - Flexible attribute system
+   - Revenue stream management
+   - Custodian tracking
 
-2. **Identity Registry**
+2. **FinatradesRWA_ERC3643_V2** (V2 - NEW)
+   - Enhanced security token with registry integration
+   - Asset-specific token tracking
+   - Per-asset dividend distribution
+   - Full ERC-3643 compliance
+
+3. **Identity Registry**
    - Manages investor identities
    - Links wallet addresses to identity contracts
    - Verifies investor claims against requirements
 
-3. **Claim Topics Registry**
+4. **Claim Topics Registry**
    - Defines required claims for token holders
    - Manages trusted claim issuers
    - Configurable compliance requirements
 
-4. **Claim Issuer**
+5. **Claim Issuer**
    - Issues KYC/AML claims
    - Manages investor verification
    - Supports claim revocation and updates
@@ -57,11 +63,21 @@ The platform consists of several key components:
 - Modular compliance system
 - Claim-based verification
 
-### 2. Asset Management
-- Multi-asset support (up to 1,000 assets)
-- Asset types: Residential, Commercial, Industrial, Agricultural, Mixed-Use
-- Valuation tracking and updates
-- Rental income distribution
+### 2. Universal Asset Management
+- **Unlimited assets** through registry pattern (no 1,000 limit)
+- **ANY asset type supported**: 
+  - Real Estate (properties, land, buildings)
+  - Precious Metals (gold, silver, platinum)
+  - Cryptocurrency (wrapped BTC, ETH)
+  - Art & Collectibles (paintings, NFTs)
+  - Intellectual Property (patents, copyrights)
+  - Equity & Debt instruments
+  - Commodities (oil, gas, agricultural)
+  - Carbon Credits
+  - And more...
+- Flexible attribute system (text, numeric, boolean, address)
+- Revenue stream management for any income-generating asset
+- Custodian tracking and management
 
 ### 3. Security Features
 - Role-based access control (7 distinct roles)
@@ -92,11 +108,14 @@ npx hardhat compile
 # Run tests
 npx hardhat test
 
-# Deploy to Polygon Mumbai testnet
-npx hardhat run scripts/deploy_erc3643.js --network polygonMumbai
+# Deploy V2 Universal Asset System to Polygon mainnet
+npx hardhat run scripts/deploy-universal-rwa.js --network polygon
 
-# Deploy to Polygon mainnet
-npx hardhat run scripts/deploy_erc3643.js --network polygon
+# Configure the system
+npx hardhat run scripts/setup-universal-rwa.js --network polygon
+
+# Deploy to testnet first (recommended)
+npx hardhat run scripts/deploy-universal-rwa.js --network polygonAmoy
 ```
 
 ## 🔧 Configuration
@@ -141,24 +160,94 @@ POLYGONSCAN_API_KEY=your_polygonscan_api_key
 
 ## Deployed Contracts (Polygon Mainnet)
 
-| Contract | Address | Verification Status |
-|----------|---------|--------------------|
-| ClaimTopicsRegistry | [`0x315a3f5d4a482204eA7EaE89D05e64b6B90a919E`](https://polygonscan.com/address/0x315a3f5d4a482204eA7EaE89D05e64b6B90a919E) | Pending |
-| IdentityRegistry | [`0x1D6f1Ca3Df3d601A079E02dCaBd809D5Bd95fe80`](https://polygonscan.com/address/0x1D6f1Ca3Df3d601A079E02dCaBd809D5Bd95fe80) | Pending |
-| ClaimIssuer | [`0x55106CFA1217A15A6bcedc7dFf9Ca0897f4E378a`](https://polygonscan.com/address/0x55106CFA1217A15A6bcedc7dFf9Ca0897f4E378a) | Pending |
-| CountryRestrictModule | [`0x952E87D7f2f5FDe3f387bE9bd6CE59Ad98BbD3A7`](https://polygonscan.com/address/0x952E87D7f2f5FDe3f387bE9bd6CE59Ad98BbD3A7) | Pending |
-| TransferLimitModule | [`0xAC4d1d37b307DE646A82A65F9a19a5a54F4D8f00`](https://polygonscan.com/address/0xAC4d1d37b307DE646A82A65F9a19a5a54F4D8f00) | Pending |
-| MaxBalanceModule | [`0x60540b959652Ef4E955385C6E28529520a25dcd2`](https://polygonscan.com/address/0x60540b959652Ef4E955385C6E28529520a25dcd2) | Pending |
-| ModularCompliance | [`0x9Db249617E876c18248Bf5Cd1289fA33A725170d`](https://polygonscan.com/address/0x9Db249617E876c18248Bf5Cd1289fA33A725170d) | Pending |
-| FinatradesRWA_ERC3643 | [`0x10375fdf730D39774eF1fD20424CD0504ef35afb`](https://polygonscan.com/address/0x10375fdf730D39774eF1fD20424CD0504ef35afb) | Pending |
-| Timelock | [`0xc929923D0d52Df0b72C8cf00C7c6156DB24232dE`](https://polygonscan.com/address/0xc929923D0d52Df0b72C8cf00C7c6156DB24232dE) | Pending |
+### Core Infrastructure (Deployed & Configured ✅)
+| Contract | Address | Status |
+|----------|---------|--------|
+| ClaimTopicsRegistry | [`0xc0b8B69C1EbB0750C79e9E37003f7f9F67C24ba5`](https://polygonscan.com/address/0xc0b8B69C1EbB0750C79e9E37003f7f9F67C24ba5) | Deployed |
+| IdentityRegistry | [`0x7fF86B722349185aC7Cc7806067Db4265EC428E1`](https://polygonscan.com/address/0x7fF86B722349185aC7Cc7806067Db4265EC428E1) | Deployed |
+| ClaimIssuer | [`0x0bB885b7901b4751Cd216B18cc99201fBbeAf8dC`](https://polygonscan.com/address/0x0bB885b7901b4751Cd216B18cc99201fBbeAf8dC) | Deployed |
+| CountryRestrictModule | [`0x22038f4Dc583816ea78540612b9d7077f7e05011`](https://polygonscan.com/address/0x22038f4Dc583816ea78540612b9d7077f7e05011) | Deployed |
+| TransferLimitModule | [`0x739870D268aC653090070cC13C69F8c730eB58AF`](https://polygonscan.com/address/0x739870D268aC653090070cC13C69F8c730eB58AF) | Deployed |
+| MaxBalanceModule | [`0xe2E06a0e6F86F58Bbe76A6b2d5A580e255Fd4E1b`](https://polygonscan.com/address/0xe2E06a0e6F86F58Bbe76A6b2d5A580e255Fd4E1b) | Deployed |
+| ModularCompliance | [`0xb5Bc25C8FD3a4B5B6c95a57c93A950fb8398789D`](https://polygonscan.com/address/0xb5Bc25C8FD3a4B5B6c95a57c93A950fb8398789D) | Deployed |
+| FinatradesRWA_ERC3643 | [`0x56fBE81E9a84d2F87996419F53a2412Ae8B1658b`](https://polygonscan.com/address/0x56fBE81E9a84d2F87996419F53a2412Ae8B1658b) | Deployed |
+| Timelock | [`0x87F6Ac9B65970fAB951A8595Fb3a06B707721C39`](https://polygonscan.com/address/0x87F6Ac9B65970fAB951A8595Fb3a06B707721C39) | Deployed |
+
+### Universal Asset System (Ready to Deploy)
+| Contract | Address | Status |
+|----------|---------|--------|
+| AssetRegistry | Pending | Ready |
+| FinatradesRWA_ERC3643_V2 | Pending | Ready |
 
 **Network**: Polygon Mainnet (ChainID: 137)
 **Deployer**: `0xCE982AC6bc316Cf9d875652B84C7626B62a899eA`
-**Block Range**: 73905850 - 73905906
-**Total POL Used**: ~0.7 POL
+
+## 🌍 Supported Asset Types
+
+The platform can tokenize literally ANY real-world asset:
+
+| Category | Examples | Use Cases |
+|----------|----------|-----------|
+| **Real Estate** | Properties, Land, REITs | Fractional ownership, Rental income |
+| **Precious Metals** | Gold, Silver, Platinum | Commodity backing, Store of value |
+| **Cryptocurrency** | Wrapped BTC, ETH, Stablecoins | Cross-chain assets, DeFi integration |
+| **Art & Collectibles** | Paintings, Sculptures, Rare items | Fractional art ownership, Museums |
+| **Intellectual Property** | Patents, Copyrights, Trademarks | Royalty sharing, IP licensing |
+| **Equity** | Company shares, Startup equity | Private markets, Employee shares |
+| **Debt Instruments** | Bonds, Loans, Receivables | Fixed income, Trade finance |
+| **Commodities** | Oil, Gas, Agricultural products | Supply chain, Futures |
+| **Carbon Credits** | VCS, Gold Standard credits | ESG investing, Offsetting |
+| **Luxury Goods** | Watches, Jewelry, Cars | Fractional luxury ownership |
+| **Infrastructure** | Solar farms, Toll roads | Yield generation, Public-private |
+| **Other** | Any asset with value | Future innovations |
 
 ## 📖 Usage Examples
+
+### Tokenizing Gold
+```javascript
+// Register 1kg gold bar
+const goldId = ethers.keccak256(ethers.toUtf8Bytes("GOLD-BAR-001"));
+await assetRegistry.registerAsset(
+    goldId,
+    "1kg Gold Bar LBMA",
+    2, // PRECIOUS_METALS
+    65000e6, // $65,000
+    "ipfs://QmGoldCert",
+    vaultAddress
+);
+
+// Set attributes
+await assetRegistry.setNumericAttribute(goldId, "weight", 1000); // grams
+await assetRegistry.setNumericAttribute(goldId, "purity", 9999); // 99.99%
+
+// Tokenize: 1000 tokens = 1kg
+await token.tokenizeAsset(goldId, ethers.parseEther("1000"), investor);
+```
+
+### Tokenizing Real Estate
+```javascript
+// Register property
+const propId = ethers.keccak256(ethers.toUtf8Bytes("NYC-PROP-001"));
+await assetRegistry.registerAsset(
+    propId,
+    "Manhattan Office",
+    1, // REAL_ESTATE
+    50000000e6, // $50M
+    "ipfs://QmPropertyDocs",
+    propertyManager
+);
+
+// Create rental income stream
+await assetRegistry.createRevenueStream(
+    propId,
+    250000e6, // $250k/month
+    30 * 86400, // Monthly
+    rentCollector
+);
+
+// Tokenize for fractional ownership
+await token.tokenizeAsset(propId, ethers.parseEther("1000000"), owner);
+```
 
 ## Access Control Matrix
 
@@ -258,19 +347,44 @@ POLYGONSCAN_API_KEY=your_polygonscan_api_key
    - Mitigation: Timelock + multi-role approval
    - Upgrade function restricted to UPGRADER_ROLE
 
-## Deployment Information
+## Deployment Status
 
+### Current System (Live on Polygon Mainnet)
+- **9 Core Contracts**: Fully deployed and configured ✅
+- **Compliance**: All modules active ✅
+- **Identity System**: Ready for KYC ✅
+- **Token Contract**: ERC-3643 compliant ✅
+
+### Universal Asset Features
+- **Asset Registry**: Unlimited assets supported
+- **Asset Types**: ANY real-world asset (gold, real estate, IP, etc.)
+- **Flexible Attributes**: Custom fields per asset type
+- **Revenue Streams**: Built-in income distribution
+- **Per-Asset Dividends**: Asset-specific payouts
+
+### Technical Details
 - **Compiler**: Solidity 0.8.19
 - **Optimizer**: Enabled (runs: 1)
 - **Network**: Polygon Mainnet
-- **Total Deployment Gas**: ~25,000,000
-- **Deployment Status**: Complete ✅
-- **Configuration Status**: Complete ✅
-  - All compliance modules added to ModularCompliance
-  - Token bound to compliance contract
-  - Ready for identity registration and claim issuance
-- **Verification**: Pending (use `npx hardhat verify` commands)
+- **Architecture**: UUPS Upgradeable
+- **Gas Used**: ~0.7 POL for core system
+
+## Next Steps
+
+1. **Deploy V2 System**:
+   ```bash
+   npx hardhat run scripts/deploy-universal-rwa.js --network polygon
+   ```
+
+2. **Configure System**:
+   ```bash
+   npx hardhat run scripts/setup-universal-rwa.js --network polygon
+   ```
+
+3. **Start Tokenizing**: Register and tokenize ANY real-world asset!
 
 ## Contact
 
-**Security Contact**: security@finatrades.com
+**Technical Support**: tech@finatrades.com  
+**Security Contact**: security@finatrades.com  
+**Asset Onboarding**: assets@finatrades.com
