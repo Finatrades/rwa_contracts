@@ -160,41 +160,39 @@ POLYGONSCAN_API_KEY=your_polygonscan_api_key
    );
    ```
 
-## Deployed Contracts (Polygon Mainnet)
+## Deployed Contracts
 
-### Deployed Contracts (All 11 Contracts ✅)
+### Polygon Mainnet (10 Fresh Contracts - July 2025 ✅)
 
 #### Identity & Claims System
 | Contract | Address | Purpose |
 |----------|---------|---------|
-| ClaimTopicsRegistry | [`0xc0b8B69C1EbB0750C79e9E37003f7f9F67C24ba5`](https://polygonscan.com/address/0xc0b8B69C1EbB0750C79e9E37003f7f9F67C24ba5) | Defines required KYC/AML claims |
-| IdentityRegistry | [`0x7fF86B722349185aC7Cc7806067Db4265EC428E1`](https://polygonscan.com/address/0x7fF86B722349185aC7Cc7806067Db4265EC428E1) | Links wallets to verified identities |
-| ClaimIssuer | [`0x0bB885b7901b4751Cd216B18cc99201fBbeAf8dC`](https://polygonscan.com/address/0x0bB885b7901b4751Cd216B18cc99201fBbeAf8dC) | Issues verified investor claims |
+| ClaimTopicsRegistry | [`0xeCf537CADeBd2951776f3AC3c1e9b76218d6ecE4`](https://polygonscan.com/address/0xeCf537CADeBd2951776f3AC3c1e9b76218d6ecE4) | Defines required KYC/AML claims |
+| IdentityRegistry | [`0x59A1923E694061b9A49b2eC92AeeF99077f42532`](https://polygonscan.com/address/0x59A1923E694061b9A49b2eC92AeeF99077f42532) | Links wallets to verified identities |
+| ClaimIssuer | [`0x625986DD1A10859C7F6326eE50B9901D5AD82170`](https://polygonscan.com/address/0x625986DD1A10859C7F6326eE50B9901D5AD82170) | Issues verified investor claims |
 
 #### Compliance Modules
 | Contract | Address | Purpose |
 |----------|---------|---------|
-| ModularCompliance | [`0xb5Bc25C8FD3a4B5B6c95a57c93A950fb8398789D`](https://polygonscan.com/address/0xb5Bc25C8FD3a4B5B6c95a57c93A950fb8398789D) | Orchestrates all compliance rules |
-| CountryRestrictModule | [`0x22038f4Dc583816ea78540612b9d7077f7e05011`](https://polygonscan.com/address/0x22038f4Dc583816ea78540612b9d7077f7e05011) | Country-based transfer restrictions |
-| TransferLimitModule | [`0x739870D268aC653090070cC13C69F8c730eB58AF`](https://polygonscan.com/address/0x739870D268aC653090070cC13C69F8c730eB58AF) | Daily/monthly transfer limits |
-| MaxBalanceModule | [`0xe2E06a0e6F86F58Bbe76A6b2d5A580e255Fd4E1b`](https://polygonscan.com/address/0xe2E06a0e6F86F58Bbe76A6b2d5A580e255Fd4E1b) | Maximum balance restrictions |
+| ModularCompliance | [`0x115f87dC7bB192924069b4291DAF0Dcd39C0A76b`](https://polygonscan.com/address/0x115f87dC7bB192924069b4291DAF0Dcd39C0A76b) | Orchestrates all compliance rules |
+| CountryRestrictModule | [`0x620818526106cc35ab598D2500632A62e0176619`](https://polygonscan.com/address/0x620818526106cc35ab598D2500632A62e0176619) | Country-based transfer restrictions |
+| TransferLimitModule | [`0xbb109a19000dF7ca3062161794405DAC026DB4E5`](https://polygonscan.com/address/0xbb109a19000dF7ca3062161794405DAC026DB4E5) | Daily/monthly transfer limits |
+| MaxBalanceModule | [`0x64BC91aba0EF92F4565b076Ea1382B2d82d418cD`](https://polygonscan.com/address/0x64BC91aba0EF92F4565b076Ea1382B2d82d418cD) | Maximum balance restrictions |
 
 #### Token & Asset Management
 | Contract | Address | Purpose |
 |----------|---------|---------|
-| FinatradesRWA Token | [`0x56fBE81E9a84d2F87996419F53a2412Ae8B1658b`](https://polygonscan.com/address/0x56fBE81E9a84d2F87996419F53a2412Ae8B1658b) | Main ERC-3643 security token |
-| AssetRegistry | [`0x30fabB0f59927f5508F7a3b8bfDcf3a60478649F`](https://polygonscan.com/address/0x30fabB0f59927f5508F7a3b8bfDcf3a60478649F) | Universal asset registry (unlimited) |
-| Universal RWA Token | [`0x713B4184cF7385e39A6c608ECF0885bd8516f91d`](https://polygonscan.com/address/0x713B4184cF7385e39A6c608ECF0885bd8516f91d) | Enhanced token with registry integration |
+| FinatradesRWA Token | [`0x414A484985771C2CFDA215FB20C48ed037eE409b`](https://polygonscan.com/address/0x414A484985771C2CFDA215FB20C48ed037eE409b) | Main ERC-3643 security token |
+| AssetRegistry | [`0xB678e16e773790B0FD56D36a516731dfA8761b77`](https://polygonscan.com/address/0xB678e16e773790B0FD56D36a516731dfA8761b77) | Universal asset registry (unlimited) |
 
 #### Governance
 | Contract | Address | Purpose |
 |----------|---------|---------|
-| Timelock | [`0x87F6Ac9B65970fAB951A8595Fb3a06B707721C39`](https://polygonscan.com/address/0x87F6Ac9B65970fAB951A8595Fb3a06B707721C39) | 48-hour delay for critical changes |
+| Timelock | [`0xCF3FA612F1eF813e31Af012B2D77eA8f3d191F82`](https://polygonscan.com/address/0xCF3FA612F1eF813e31Af012B2D77eA8f3d191F82) | 48-hour delay for critical changes |
 
 **Network**: Polygon Mainnet (ChainID: 137)
 **Deployer**: `0xCE982AC6bc316Cf9d875652B84C7626B62a899eA`
 
-> **Note**: Finatrades will be deploying these contracts to **Ethereum Mainnet** soon for enhanced security and institutional adoption. The Polygon deployment serves as our production-ready implementation.
 
 ## 🌍 Supported Asset Types
 
@@ -364,7 +362,7 @@ await token.tokenizeAsset(propId, ethers.parseEther("1000000"), owner);
 ## Deployment Status
 
 ### Live on Polygon Mainnet
-- **11 Contracts**: Fully deployed and configured ✅
+- **10 Contracts**: Freshly deployed (July 2025) ✅
 - **Architecture**: Complete RWA tokenization platform
 - **Compliance**: All modules active ✅
 - **Identity System**: Ready for KYC/AML ✅

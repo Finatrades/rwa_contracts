@@ -14,16 +14,28 @@ const config: HardhatUserConfig = {
     settings: {
       optimizer: {
         enabled: true,
-        runs: 1,
+        runs: 200,
         details: {
           yul: true,
           yulDetails: {
             stackAllocation: true,
-            optimizerSteps: "dhfoDgvulfnTUtnIf"
-          }
+            optimizerSteps: "dhfoDgvulfnTUtnIf[xa[r]EscLMcCTUtTOntnfDIulLculVcul [j]Tpeulxa[rul]xa[r]cLgvifCTUca[r]LSsTFOtfDnca[r]Iulc]jmul[jul] VcTOcul jmul"
+          },
+          peephole: true,
+          jumpdestRemover: true,
+          orderLiterals: true,
+          deduplicate: true,
+          cse: true,
+          constantOptimizer: true
         }
       },
-      viaIR: false,
+      viaIR: true,
+      outputSelection: {
+        "*": {
+          "*": ["evm.bytecode.object", "evm.deployedBytecode.object", "abi", "evm.bytecode.sourceMap", "evm.deployedBytecode.sourceMap"],
+          "": ["ast"]
+        }
+      }
     },
   },
   networks: {

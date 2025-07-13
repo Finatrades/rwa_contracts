@@ -1,0 +1,42 @@
+{
+  "network": "polygon_mainnet",
+  "chainId": 137,
+  "deploymentDate": "2025-07-13T12:51:30.129Z",
+  "deployer": "0xCE982AC6bc316Cf9d875652B84C7626B62a899eA",
+  "contracts": {
+    "claimTopicsRegistry": "0xeCf537CADeBd2951776f3AC3c1e9b76218d6ecE4",
+    "identityRegistry": "0x59A1923E694061b9A49b2eC92AeeF99077f42532",
+    "claimIssuer": "0x625986DD1A10859C7F6326eE50B9901D5AD82170",
+    "countryModule": "0x620818526106cc35ab598D2500632A62e0176619",
+    "transferLimitModule": "0xbb109a19000dF7ca3062161794405DAC026DB4E5",
+    "maxBalanceModule": "0x64BC91aba0EF92F4565b076Ea1382B2d82d418cD",
+    "modularCompliance": "0x115f87dC7bB192924069b4291DAF0Dcd39C0A76b",
+    "token": "0x414A484985771C2CFDA215FB20C48ed037eE409b",
+    "timelock": "0xCF3FA612F1eF813e31Af012B2D77eA8f3d191F82",
+    "assetRegistry": "0xB678e16e773790B0FD56D36a516731dfA8761b77"
+  },
+  "implementations": {
+    "claimTopicsRegistry": "0xF3e5D0f2d6bE87DA0AeA7da96c5c97Fe36D3C55E",
+    "identityRegistry": "0x5a77D37e5c3B3EC2DCcE82F8DE2D4F9FD2b88329",
+    "claimIssuer": "0xAcE2FA0Aec33A3a0B685f7ce90d8851E7d91AeD8",
+    "countryModule": "0x0B2ce8afFdcBCb3dd5d614f973Fc2d2f4Df3c3E1",
+    "transferLimitModule": "0x4b96a3c3B37A3d0A10aDb0Be9cb45E2d55F9DDd0",
+    "maxBalanceModule": "0x6cEA7336c0F8E1F95B67Ed88c8a59E46E9Ce569A",
+    "modularCompliance": "0x87e7eA8F688e1ec417a0d4C95BA8d43F49Fa3e5B",
+    "token": "0x907e31Fe52dE3C48C4c07F436a7d1e25D9FDCc70",
+    "assetRegistry": "0xED5b1FC638f18D7AEa0DC24c7E3fa96D73AB4E23"
+  },
+  "verificationStatus": {
+    "claimTopicsRegistry": false,
+    "identityRegistry": false,
+    "claimIssuer": false,
+    "countryModule": false,
+    "transferLimitModule": false,
+    "maxBalanceModule": false,
+    "modularCompliance": false,
+    "token": false,
+    "assetRegistry": false,
+    "timelock": false
+  },
+  "note": "Fresh deployment of 10 contracts (TokenV2 skipped due to initialization ambiguity)"
+}

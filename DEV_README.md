@@ -4,68 +4,65 @@
 
 This is an institutional-grade Real World Asset (RWA) tokenization platform implementing the ERC-3643 (T-REX) standard. The platform can tokenize **ANY type of real-world asset** - from gold and real estate to intellectual property and carbon credits - with no limits on the number of assets.
 
-## Deployed Contracts on Polygon Mainnet
+## Deployed Contracts
+
+### Polygon Mainnet
 
 The following contracts have been deployed to Polygon Mainnet (Chain ID: 137):
 
 ### Core Identity & Claims Contracts
 
-1. **ClaimTopicsRegistry**: `0xc0b8B69C1EbB0750C79e9E37003f7f9F67C24ba5`
+1. **ClaimTopicsRegistry**: `0xeCf537CADeBd2951776f3AC3c1e9b76218d6ecE4`
    - Manages the list of claim topics required for compliance
    - Defines which claims investors must have to hold tokens
 
-2. **IdentityRegistry**: `0x7fF86B722349185aC7Cc7806067Db4265EC428E1`
+2. **IdentityRegistry**: `0x59A1923E694061b9A49b2eC92AeeF99077f42532`
    - Central registry linking wallet addresses to identity contracts
    - Verifies investor eligibility based on claims
 
-3. **ClaimIssuer**: `0x0bB885b7901b4751Cd216B18cc99201fBbeAf8dC`
+3. **ClaimIssuer**: `0x625986DD1A10859C7F6326eE50B9901D5AD82170`
    - Issues verified claims for investors
    - Acts as a trusted authority for KYC/AML verification
 
 ### Compliance Modules
 
-4. **CountryRestrictModule**: `0x22038f4Dc583816ea78540612b9d7077f7e05011`
+4. **CountryRestrictModule**: `0x620818526106cc35ab598D2500632A62e0176619`
    - Restricts transfers based on investor countries
    - Allows setting country-specific restrictions
 
-5. **TransferLimitModule**: `0x739870D268aC653090070cC13C69F8c730eB58AF`
+5. **TransferLimitModule**: `0xbb109a19000dF7ca3062161794405DAC026DB4E5`
    - Enforces daily and monthly transfer limits
    - Configurable per investor or global defaults
 
-6. **MaxBalanceModule**: `0xe2E06a0e6F86F58Bbe76A6b2d5A580e255Fd4E1b`
+6. **MaxBalanceModule**: `0x64BC91aba0EF92F4565b076Ea1382B2d82d418cD`
    - Restricts maximum token balance per investor
    - Useful for limiting concentration risk
 
 ### Core Contracts
 
-7. **ModularCompliance**: `0xb5Bc25C8FD3a4B5B6c95a57c93A950fb8398789D`
+7. **ModularCompliance**: `0x115f87dC7bB192924069b4291DAF0Dcd39C0A76b`
    - Orchestrates all compliance modules
    - Validates transfers against all active modules
    - Dynamically add/remove compliance rules
 
-8. **FinatradesRWA_ERC3643**: `0x56fBE81E9a84d2F87996419F53a2412Ae8B1658b`
+8. **FinatradesRWA_ERC3643**: `0x414A484985771C2CFDA215FB20C48ed037eE409b`
    - Main ERC-3643 compliant token contract
    - Integrates with identity registry and compliance
    - Manages asset tokenization
 
-9. **Timelock**: `0x87F6Ac9B65970fAB951A8595Fb3a06B707721C39`
+9. **Timelock**: `0xCF3FA612F1eF813e31Af012B2D77eA8f3d191F82`
    - Governance delay mechanism (2 days)
    - Controls critical administrative functions
    - Ensures security through time-delayed execution
 
 ### Asset Management System
 
-10. **AssetRegistry**: `0x30fabB0f59927f5508F7a3b8bfDcf3a60478649F`
+10. **AssetRegistry**: `0xB678e16e773790B0FD56D36a516731dfA8761b77`
     - Universal registry supporting ANY asset type
     - Unlimited asset storage
     - Flexible attribute system
     - Revenue stream management
 
-11. **Universal RWA Token**: `0x713B4184cF7385e39A6c608ECF0885bd8516f91d`
-    - Token with AssetRegistry integration
-    - Per-asset token tracking
-    - Asset-specific dividends
-    - Unlimited asset support
 
 ## Architecture Overview
 
@@ -106,7 +103,7 @@ const identity = await Identity.deploy(investorAddress);
 // Register the identity
 const identityRegistry = await ethers.getContractAt(
     "IdentityRegistry", 
-    "0x7fF86B722349185aC7Cc7806067Db4265EC428E1"
+    "0x59A1923E694061b9A49b2eC92AeeF99077f42532"
 );
 await identityRegistry.registerIdentity(investorAddress, identity.address);
 ```
@@ -117,7 +114,7 @@ await identityRegistry.registerIdentity(investorAddress, identity.address);
 // Get the claim issuer contract
 const claimIssuer = await ethers.getContractAt(
     "ClaimIssuer", 
-    "0x0bB885b7901b4751Cd216B18cc99201fBbeAf8dC"
+    "0x625986DD1A10859C7F6326eE50B9901D5AD82170"
 );
 
 // Add a KYC claim (topic 1)
@@ -140,7 +137,7 @@ await claimIssuer.addClaim(
 ```javascript
 const countryModule = await ethers.getContractAt(
     "CountryRestrictModule",
-    "0x22038f4Dc583816ea78540612b9d7077f7e05011"
+    "0x620818526106cc35ab598D2500632A62e0176619"
 );
 
 // Allow USA (country code 1) and UK (country code 44)
@@ -155,7 +152,7 @@ await countryModule.setCountryPairRestriction(1, 380, true); // USA to Ukraine
 ```javascript
 const transferModule = await ethers.getContractAt(
     "TransferLimitModule",
-    "0x739870D268aC653090070cC13C69F8c730eB58AF"
+    "0xbb109a19000dF7ca3062161794405DAC026DB4E5"
 );
 
 // Set limits for a specific investor
@@ -171,7 +168,7 @@ await transferModule.setTransferLimit(
 ```javascript
 const maxBalanceModule = await ethers.getContractAt(
     "MaxBalanceModule",
-    "0xe2E06a0e6F86F58Bbe76A6b2d5A580e255Fd4E1b"
+    "0x64BC91aba0EF92F4565b076Ea1382B2d82d418cD"
 );
 
 // Set max balance for an investor
@@ -204,13 +201,13 @@ The platform now supports ANY type of real-world asset through a flexible regist
 // AssetRegistry is already deployed at:
 const assetRegistry = await ethers.getContractAt(
     "AssetRegistry",
-    "0x30fabB0f59927f5508F7a3b8bfDcf3a60478649F"
+    "0xB678e16e773790B0FD56D36a516731dfA8761b77"
 );
 
-// Token V2 is already deployed and authorized at:
-const tokenV2 = await ethers.getContractAt(
-    "FinatradesRWA_ERC3643_V2",
-    "0x713B4184cF7385e39A6c608ECF0885bd8516f91d"
+// Fresh deployment uses base token:
+const token = await ethers.getContractAt(
+    "FinatradesRWA_ERC3643",
+    "0x414A484985771C2CFDA215FB20C48ed037eE409b"
 );
 ```
 
@@ -694,6 +691,7 @@ async function configureInstitutionalLimits(institutionAddress) {
    ```bash
    npx hardhat run scripts/deploy-universal-rwa.js --network polygon
    ```
+
 
 ## Common Errors and Solutions
 

@@ -1,0 +1,17 @@
+{
+  "network": "polygon",
+  "chainId": 137,
+  "timestamp": "2025-07-13T12:55:14.149Z",
+  "proxies": {
+    "claimTopicsRegistry": "0xeCf537CADeBd2951776f3AC3c1e9b76218d6ecE4",
+    "identityRegistry": "0x59A1923E694061b9A49b2eC92AeeF99077f42532",
+    "claimIssuer": "0x625986DD1A10859C7F6326eE50B9901D5AD82170",
+    "countryModule": "0x620818526106cc35ab598D2500632A62e0176619",
+    "transferLimitModule": "0xbb109a19000dF7ca3062161794405DAC026DB4E5",
+    "maxBalanceModule": "0x64BC91aba0EF92F4565b076Ea1382B2d82d418cD",
+    "modularCompliance": "0x115f87dC7bB192924069b4291DAF0Dcd39C0A76b",
+    "token": "0x414A484985771C2CFDA215FB20C48ed037eE409b",
+    "assetRegistry": "0xB678e16e773790B0FD56D36a516731dfA8761b77"
+  },
+  "implementations": {}
+}
