@@ -53,18 +53,19 @@ The following contracts have been deployed to Polygon Mainnet (Chain ID: 137):
    - Controls critical administrative functions
    - Ensures security through time-delayed execution
 
-### Universal Asset System
+### Asset Management System
 
-10. **AssetRegistry**: `[PENDING DEPLOYMENT]`
+10. **AssetRegistry**: `0x30fabB0f59927f5508F7a3b8bfDcf3a60478649F`
     - Universal registry supporting ANY asset type
-    - Unlimited asset storage (no 1,000 limit)
+    - Unlimited asset storage
     - Flexible attribute system
     - Revenue stream management
 
-11. **FinatradesRWA_ERC3643_V2**: `[PENDING DEPLOYMENT]`
-    - Enhanced token with AssetRegistry integration
+11. **Universal RWA Token**: `0x713B4184cF7385e39A6c608ECF0885bd8516f91d`
+    - Token with AssetRegistry integration
     - Per-asset token tracking
     - Asset-specific dividends
+    - Unlimited asset support
 
 ## Architecture Overview
 
@@ -180,7 +181,7 @@ await maxBalanceModule.setMaxBalance(
 );
 ```
 
-## Universal Asset Management (V2)
+## Asset Management with Registry
 
 The platform now supports ANY type of real-world asset through a flexible registry pattern:
 
@@ -200,16 +201,17 @@ The platform now supports ANY type of real-world asset through a flexible regist
 ### Asset Registry Pattern
 
 ```javascript
-// Deploy AssetRegistry (one-time)
-const AssetRegistry = await ethers.getContractFactory("AssetRegistry");
-const assetRegistry = await upgrades.deployProxy(
-    AssetRegistry,
-    [adminAddress],
-    { kind: "uups" }
+// AssetRegistry is already deployed at:
+const assetRegistry = await ethers.getContractAt(
+    "AssetRegistry",
+    "0x30fabB0f59927f5508F7a3b8bfDcf3a60478649F"
 );
 
-// Authorize token contract to interact with registry
-await assetRegistry.authorizeTokenContract(tokenAddress, true);
+// Token V2 is already deployed and authorized at:
+const tokenV2 = await ethers.getContractAt(
+    "FinatradesRWA_ERC3643_V2",
+    "0x713B4184cF7385e39A6c608ECF0885bd8516f91d"
+);
 ```
 
 ### Example: Tokenizing Gold
@@ -217,12 +219,12 @@ await assetRegistry.authorizeTokenContract(tokenAddress, true);
 ```javascript
 const assetRegistry = await ethers.getContractAt(
     "AssetRegistry",
-    "0x[REGISTRY_ADDRESS]"
+    "0x30fabB0f59927f5508F7a3b8bfDcf3a60478649F"
 );
 
 const token = await ethers.getContractAt(
     "FinatradesRWA_ERC3643_V2",
-    "0x[TOKEN_V2_ADDRESS]"
+    "0x713B4184cF7385e39A6c608ECF0885bd8516f91d"
 );
 
 // 1. Register gold asset

@@ -63,21 +63,23 @@ The platform consists of several key components:
 - Modular compliance system
 - Claim-based verification
 
-### 2. Universal Asset Management
-- **Unlimited assets** through registry pattern (no 1,000 limit)
-- **ANY asset type supported**: 
-  - Real Estate (properties, land, buildings)
-  - Precious Metals (gold, silver, platinum)
-  - Cryptocurrency (wrapped BTC, ETH)
-  - Art & Collectibles (paintings, NFTs)
-  - Intellectual Property (patents, copyrights)
-  - Equity & Debt instruments
-  - Commodities (oil, gas, agricultural)
-  - Carbon Credits
-  - And more...
-- Flexible attribute system (text, numeric, boolean, address)
-- Revenue stream management for any income-generating asset
-- Custodian tracking and management
+### 2. Asset Management Options
+The platform offers two approaches for different needs:
+
+**Standard Token** (`0x56fBE81E9a84d2F87996419F53a2412Ae8B1658b`)
+- Built-in asset management
+- Suitable for focused portfolios (up to 1,000 assets)
+- Direct dividend distribution
+- Simpler deployment
+
+**Universal Token with Registry** (`0x713B4184cF7385e39A6c608ECF0885bd8516f91d`)
+- External asset registry for unlimited assets
+- ANY asset type supported (real estate, gold, art, IP, etc.)
+- Flexible attribute system
+- Per-asset token tracking
+- Asset-specific dividends
+
+Both tokens use the same compliance infrastructure, allowing you to choose based on your asset scale.
 
 ### 3. Security Features
 - Role-based access control (7 distinct roles)
@@ -160,27 +162,39 @@ POLYGONSCAN_API_KEY=your_polygonscan_api_key
 
 ## Deployed Contracts (Polygon Mainnet)
 
-### Core Infrastructure (Deployed & Configured ✅)
-| Contract | Address | Status |
-|----------|---------|--------|
-| ClaimTopicsRegistry | [`0xc0b8B69C1EbB0750C79e9E37003f7f9F67C24ba5`](https://polygonscan.com/address/0xc0b8B69C1EbB0750C79e9E37003f7f9F67C24ba5) | Deployed |
-| IdentityRegistry | [`0x7fF86B722349185aC7Cc7806067Db4265EC428E1`](https://polygonscan.com/address/0x7fF86B722349185aC7Cc7806067Db4265EC428E1) | Deployed |
-| ClaimIssuer | [`0x0bB885b7901b4751Cd216B18cc99201fBbeAf8dC`](https://polygonscan.com/address/0x0bB885b7901b4751Cd216B18cc99201fBbeAf8dC) | Deployed |
-| CountryRestrictModule | [`0x22038f4Dc583816ea78540612b9d7077f7e05011`](https://polygonscan.com/address/0x22038f4Dc583816ea78540612b9d7077f7e05011) | Deployed |
-| TransferLimitModule | [`0x739870D268aC653090070cC13C69F8c730eB58AF`](https://polygonscan.com/address/0x739870D268aC653090070cC13C69F8c730eB58AF) | Deployed |
-| MaxBalanceModule | [`0xe2E06a0e6F86F58Bbe76A6b2d5A580e255Fd4E1b`](https://polygonscan.com/address/0xe2E06a0e6F86F58Bbe76A6b2d5A580e255Fd4E1b) | Deployed |
-| ModularCompliance | [`0xb5Bc25C8FD3a4B5B6c95a57c93A950fb8398789D`](https://polygonscan.com/address/0xb5Bc25C8FD3a4B5B6c95a57c93A950fb8398789D) | Deployed |
-| FinatradesRWA_ERC3643 | [`0x56fBE81E9a84d2F87996419F53a2412Ae8B1658b`](https://polygonscan.com/address/0x56fBE81E9a84d2F87996419F53a2412Ae8B1658b) | Deployed |
-| Timelock | [`0x87F6Ac9B65970fAB951A8595Fb3a06B707721C39`](https://polygonscan.com/address/0x87F6Ac9B65970fAB951A8595Fb3a06B707721C39) | Deployed |
+### Deployed Contracts (All 11 Contracts ✅)
 
-### Universal Asset System (Ready to Deploy)
-| Contract | Address | Status |
-|----------|---------|--------|
-| AssetRegistry | Pending | Ready |
-| FinatradesRWA_ERC3643_V2 | Pending | Ready |
+#### Identity & Claims System
+| Contract | Address | Purpose |
+|----------|---------|---------|
+| ClaimTopicsRegistry | [`0xc0b8B69C1EbB0750C79e9E37003f7f9F67C24ba5`](https://polygonscan.com/address/0xc0b8B69C1EbB0750C79e9E37003f7f9F67C24ba5) | Defines required KYC/AML claims |
+| IdentityRegistry | [`0x7fF86B722349185aC7Cc7806067Db4265EC428E1`](https://polygonscan.com/address/0x7fF86B722349185aC7Cc7806067Db4265EC428E1) | Links wallets to verified identities |
+| ClaimIssuer | [`0x0bB885b7901b4751Cd216B18cc99201fBbeAf8dC`](https://polygonscan.com/address/0x0bB885b7901b4751Cd216B18cc99201fBbeAf8dC) | Issues verified investor claims |
+
+#### Compliance Modules
+| Contract | Address | Purpose |
+|----------|---------|---------|
+| ModularCompliance | [`0xb5Bc25C8FD3a4B5B6c95a57c93A950fb8398789D`](https://polygonscan.com/address/0xb5Bc25C8FD3a4B5B6c95a57c93A950fb8398789D) | Orchestrates all compliance rules |
+| CountryRestrictModule | [`0x22038f4Dc583816ea78540612b9d7077f7e05011`](https://polygonscan.com/address/0x22038f4Dc583816ea78540612b9d7077f7e05011) | Country-based transfer restrictions |
+| TransferLimitModule | [`0x739870D268aC653090070cC13C69F8c730eB58AF`](https://polygonscan.com/address/0x739870D268aC653090070cC13C69F8c730eB58AF) | Daily/monthly transfer limits |
+| MaxBalanceModule | [`0xe2E06a0e6F86F58Bbe76A6b2d5A580e255Fd4E1b`](https://polygonscan.com/address/0xe2E06a0e6F86F58Bbe76A6b2d5A580e255Fd4E1b) | Maximum balance restrictions |
+
+#### Token & Asset Management
+| Contract | Address | Purpose |
+|----------|---------|---------|
+| FinatradesRWA Token | [`0x56fBE81E9a84d2F87996419F53a2412Ae8B1658b`](https://polygonscan.com/address/0x56fBE81E9a84d2F87996419F53a2412Ae8B1658b) | Main ERC-3643 security token |
+| AssetRegistry | [`0x30fabB0f59927f5508F7a3b8bfDcf3a60478649F`](https://polygonscan.com/address/0x30fabB0f59927f5508F7a3b8bfDcf3a60478649F) | Universal asset registry (unlimited) |
+| Universal RWA Token | [`0x713B4184cF7385e39A6c608ECF0885bd8516f91d`](https://polygonscan.com/address/0x713B4184cF7385e39A6c608ECF0885bd8516f91d) | Enhanced token with registry integration |
+
+#### Governance
+| Contract | Address | Purpose |
+|----------|---------|---------|
+| Timelock | [`0x87F6Ac9B65970fAB951A8595Fb3a06B707721C39`](https://polygonscan.com/address/0x87F6Ac9B65970fAB951A8595Fb3a06B707721C39) | 48-hour delay for critical changes |
 
 **Network**: Polygon Mainnet (ChainID: 137)
 **Deployer**: `0xCE982AC6bc316Cf9d875652B84C7626B62a899eA`
+
+> **Note**: Finatrades will be deploying these contracts to **Ethereum Mainnet** soon for enhanced security and institutional adoption. The Polygon deployment serves as our production-ready implementation.
 
 ## 🌍 Supported Asset Types
 
@@ -349,18 +363,19 @@ await token.tokenizeAsset(propId, ethers.parseEther("1000000"), owner);
 
 ## Deployment Status
 
-### Current System (Live on Polygon Mainnet)
-- **9 Core Contracts**: Fully deployed and configured ✅
+### Live on Polygon Mainnet
+- **11 Contracts**: Fully deployed and configured ✅
+- **Architecture**: Complete RWA tokenization platform
 - **Compliance**: All modules active ✅
-- **Identity System**: Ready for KYC ✅
-- **Token Contract**: ERC-3643 compliant ✅
+- **Identity System**: Ready for KYC/AML ✅
+- **Asset Support**: From single assets to unlimited portfolios ✅
 
-### Universal Asset Features
-- **Asset Registry**: Unlimited assets supported
-- **Asset Types**: ANY real-world asset (gold, real estate, IP, etc.)
-- **Flexible Attributes**: Custom fields per asset type
-- **Revenue Streams**: Built-in income distribution
-- **Per-Asset Dividends**: Asset-specific payouts
+### Platform Capabilities
+- **Any Asset Type**: Real estate, gold, art, IP, carbon credits, etc.
+- **Flexible Scale**: Choose standard token or registry-based approach
+- **Full Compliance**: ERC-3643 with modular restrictions
+- **Revenue Distribution**: Built-in dividend mechanisms
+- **Institutional Ready**: Timelock governance and upgrade controls
 
 ### Technical Details
 - **Compiler**: Solidity 0.8.19
