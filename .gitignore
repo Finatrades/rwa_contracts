@@ -6,6 +6,8 @@ lcov.info
 typechain
 typechain-types
 
+DEV_README.md
+
 # Hardhat files
 cache
 artifacts

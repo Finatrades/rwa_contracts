@@ -91,6 +91,30 @@ The following contracts have been deployed to Polygon Mainnet (Chain ID: 137):
 └─────────┘
 ```
 
+## Contract Interaction Flow
+
+### Token Transfer Flow
+```
+1. Sender initiates transfer
+   ↓
+2. Token checks if paused
+   ↓
+3. Token checks frozen addresses
+   ↓
+4. Token queries IdentityRegistry for both parties
+   ↓
+5. IdentityRegistry verifies claims via ClaimTopicsRegistry
+   ↓
+6. Token queries ModularCompliance
+   ↓
+7. ModularCompliance checks all modules:
+   - CountryRestrictModule
+   - TransferLimitModule  
+   - MaxBalanceModule
+   ↓
+8. If all pass, transfer executes
+```
+
 ## Quick Start Guide
 
 ### 1. Setting Up Identity for an Investor
@@ -850,6 +874,53 @@ artifacts/contracts/[ContractName].sol/[ContractName].json
    - Transfer Limits: `0x739870D268aC653090070cC13C69F8c730eB58AF`
    - Max Balance: `0xe2E06a0e6F86F58Bbe76A6b2d5A580e255Fd4E1b`
 
+### Key Smart Contract Methods
+
+#### Token Contract
+```javascript
+// Read methods
+balanceOf(address account) // Get token balance
+totalSupply() // Total token supply
+decimals() // Token decimals (18)
+name() // Token name
+symbol() // Token symbol
+paused() // Check if transfers are paused
+isFrozen(address account) // Check if address is frozen
+
+// Write methods (require appropriate roles)
+transfer(address to, uint256 amount) // Transfer tokens
+mint(address to, uint256 amount) // Mint new tokens (AGENT_ROLE)
+burn(address from, uint256 amount) // Burn tokens (AGENT_ROLE)
+pause() // Pause all transfers (AGENT_ROLE)
+unpause() // Resume transfers (AGENT_ROLE)
+setAddressFrozen(address account, bool frozen) // Freeze/unfreeze address
+```
+
+#### Identity Registry
+```javascript
+// Read methods
+isVerified(address userAddress) // Check if user is KYC verified
+identity(address userAddress) // Get identity contract address
+investorCountry(address userAddress) // Get investor's country code
+
+// Write methods (require appropriate roles)
+registerIdentity(address user, address identity) // Register new identity
+deleteIdentity(address user) // Remove identity
+setInvestorCountry(address user, uint16 country) // Set country code
+```
+
+#### Modular Compliance
+```javascript
+// Read methods
+canTransfer(address from, address to, uint256 value) // Check if transfer allowed
+isModuleBound(address module) // Check if module is active
+getModules() // Get all active compliance modules
+
+// Write methods (require appropriate roles)
+addModule(address module) // Add compliance module
+removeModule(address module) // Remove compliance module
+```
+
 ### Web3 Integration Example
 
 ```javascript
@@ -976,6 +1047,59 @@ All contracts are live on Polygon Mainnet. For testing:
 ---
 
 **Note**: This platform implements institutional-grade security features. Ensure proper legal compliance and auditing before production use.
+
+## Important Integration Notes
+
+### 1. Role Management
+The platform uses role-based access control with these key roles:
+
+```javascript
+// Role identifiers (keccak256 hashes)
+const OWNER_ROLE = "0xb19546dff01e856fb3f010c267a7b1c60363cf8a4664e21cc89c26224620214e";
+const AGENT_ROLE = ethers.keccak256(ethers.toUtf8Bytes("AGENT_ROLE"));
+const DEFAULT_ADMIN_ROLE = "0x0000000000000000000000000000000000000000000000000000000000000000";
+```
+
+### 2. Contract Initialization Status
+All contracts are deployed and configured:
+- ✅ Identity Registry linked to Claim Topics Registry
+- ✅ Compliance modules added to Modular Compliance
+- ✅ Token bound to compliance
+- ✅ Asset Registry ready for asset tokenization
+
+### 3. Gas Optimization Tips
+- Batch operations when possible (multiple KYC, multiple mints)
+- Use multicall for reading multiple contract states
+- Cache compliance check results in your backend
+
+### 4. Production Checklist
+Before going live, ensure:
+- [ ] All admin roles properly distributed
+- [ ] Claim issuers authorized
+- [ ] Country restrictions configured
+- [ ] Transfer limits set appropriately
+- [ ] Emergency procedures documented
+- [ ] Monitoring systems in place
+
+### 5. ABI Locations
+All contract ABIs are in: `artifacts/contracts/[ContractName].sol/[ContractName].json`
+
+Example to load ABI:
+```javascript
+const tokenABI = require('./artifacts/contracts/FinatradesRWA_ERC3643.sol/FinatradesRWA_ERC3643.json').abi;
+```
+
+### 6. Network Information
+- **Network**: Polygon Mainnet
+- **Chain ID**: 137
+- **RPC**: https://polygon-rpc.com
+- **Explorer**: https://polygonscan.com
+- **Native Token**: MATIC
+
+### 7. Contact & Support
+- **Technical Issues**: Create an issue in the repository
+- **Security Concerns**: security@finatrades.com
+- **Integration Support**: dev@finatrades.com
 
 ## License
 
