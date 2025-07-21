@@ -9,8 +9,24 @@ import "../libraries/UniversalAssetLib.sol";
 
 /**
  * @title AssetRegistry
- * @notice Universal registry for ANY type of real-world asset
- * @dev Separate contract for unlimited asset storage with flexible attributes
+ * @author Finatrades
+ * @notice Universal registry for managing any type of real-world asset
+ * @dev Implements flexible asset management with attribute system and lifecycle tracking
+ * 
+ * @custom:security-contact security@finatrades.com
+ * 
+ * Key features:
+ * - Support for ANY asset type (real estate, commodities, art, IP, etc.)
+ * - Flexible attribute system (text, numeric, boolean, address)
+ * - Asset lifecycle management with status tracking
+ * - Revenue stream tracking and management
+ * - Integration with ERC-3643 compliant tokens
+ * 
+ * The registry uses a bytes32 identifier for each asset and supports:
+ * - Asset verification and activation
+ * - Attribute management with type safety
+ * - Revenue tracking for yield-generating assets
+ * - Comprehensive event logging for audit trails
  */
 contract AssetRegistry is 
     AccessControlUpgradeable,

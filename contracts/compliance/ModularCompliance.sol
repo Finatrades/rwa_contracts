@@ -10,8 +10,28 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 
 /**
  * @title ModularCompliance
- * @notice Modular compliance system for ERC-3643 tokens
- * @dev Allows adding/removing compliance modules dynamically
+ * @author Finatrades
+ * @notice Modular compliance system for ERC-3643 security tokens
+ * @dev Implements a flexible compliance framework with pluggable modules
+ * 
+ * @custom:security-contact security@finatrades.com
+ * 
+ * This contract serves as the central compliance engine for the token system.
+ * It allows for dynamic addition and removal of compliance modules, each
+ * implementing specific regulatory requirements.
+ * 
+ * Key features:
+ * - Dynamic module management (add/remove at runtime)
+ * - Module execution in sequence with AND logic
+ * - Transfer validation before execution
+ * - Post-transfer state updates
+ * - Emergency pause functionality
+ * 
+ * Compliance flow:
+ * 1. Token calls canTransfer() before any transfer
+ * 2. Each active module is checked in sequence
+ * 3. All modules must approve for transfer to proceed
+ * 4. After transfer, transferred() updates module states
  */
 contract ModularCompliance is ICompliance, Initializable, AccessControlUpgradeable, UUPSUpgradeable {
     bytes32 public constant OWNER_ROLE = keccak256("OWNER_ROLE");

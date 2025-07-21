@@ -1,67 +1,61 @@
-const axios = require('axios');
-require('dotenv').config();
-
-const contracts = [
-  { name: "ClaimTopicsRegistry", address: "0x315a3f5d4a482204eA7EaE89D05e64b6B90a919E" },
-  { name: "IdentityRegistry", address: "0x1D6f1Ca3Df3d601A079E02dCaBd809D5Bd95fe80" },
-  { name: "ClaimIssuer", address: "0x55106CFA1217A15A6bcedc7dFf9Ca0897f4E378a" },
-  { name: "CountryRestrictModule", address: "0x952E87D7f2f5FDe3f387bE9bd6CE59Ad98BbD3A7" },
-  { name: "TransferLimitModule", address: "0xAC4d1d37b307DE646A82A65F9a19a5a54F4D8f00" },
-  { name: "MaxBalanceModule", address: "0x60540b959652Ef4E955385C6E28529520a25dcd2" },
-  { name: "ModularCompliance", address: "0x9Db249617E876c18248Bf5Cd1289fA33A725170d" },
-  { name: "FinatradesRWA_ERC3643", address: "0x10375fdf730D39774eF1fD20424CD0504ef35afb" },
-  { name: "Timelock", address: "0xc929923D0d52Df0b72C8cf00C7c6156DB24232dE" }
-];
+const { ethers } = require("hardhat");
 
 async function checkVerificationStatus() {
-  console.log("Checking verification status of all contracts on Polygonscan...\n");
-  
-  const apiKey = process.env.POLYGONSCAN_API_KEY;
-  if (!apiKey) {
-    console.error("Error: POLYGONSCAN_API_KEY not found in .env file");
-    return;
-  }
-
-  for (const contract of contracts) {
-    try {
-      // Wait 250ms between requests to avoid rate limiting
-      await new Promise(resolve => setTimeout(resolve, 250));
-      
-      const url = `https://api.polygonscan.com/api?module=contract&action=getsourcecode&address=${contract.address}&apikey=${apiKey}`;
-      const response = await axios.get(url);
-      
-      if (response.data.status === "1" && response.data.result[0].SourceCode) {
-        const result = response.data.result[0];
-        const isVerified = result.SourceCode !== "";
-        const isProxy = result.Proxy !== "0" && result.Implementation !== "";
-        
-        console.log(`${contract.name} (${contract.address}):`);
-        console.log(`  Status: ${isVerified ? '✅ VERIFIED' : '❌ NOT VERIFIED'}`);
-        
-        if (isVerified) {
-          console.log(`  Contract Name: ${result.ContractName}`);
-          console.log(`  Compiler: ${result.CompilerVersion}`);
-          console.log(`  Optimization: ${result.OptimizationUsed === "1" ? 'Yes' : 'No'}`);
-          
-          if (isProxy) {
-            console.log(`  Type: Proxy Contract`);
-            console.log(`  Implementation: ${result.Implementation}`);
-          }
-        }
-        console.log(`  Polygonscan: https://polygonscan.com/address/${contract.address}#code`);
-        console.log();
-      } else {
-        console.log(`${contract.name} (${contract.address}):`);
-        console.log(`  Status: ❌ NOT VERIFIED`);
-        console.log(`  Polygonscan: https://polygonscan.com/address/${contract.address}#code`);
-        console.log();
-      }
-    } catch (error) {
-      console.error(`Error checking ${contract.name}: ${error.message}`);
+    console.log("🔍 CHECKING CONTRACT VERIFICATION STATUS ON POLYGONSCAN\n");
+    
+    const contracts = [
+        { name: "Token Proxy", address: "0xED1c85A48EcD10654eD075F63F554cB3ac7faf6c" },
+        { name: "ModularCompliance Proxy", address: "0x123A014c135417b58BB3e04A5711C8F126cA95E8" },
+        { name: "AssetRegistry Proxy", address: "0x4717bED7008bc5aF62b3b91a29aaa24Bab034038" },
+        { name: "RegulatoryReporting Proxy", address: "0xcd5fC2E20D697394d66e30475981bA5F37fD160e" },
+        { name: "CountryRestrictModule Proxy", address: "0x934b1C1AD4d205517B1a09A984c3F077cd99651A" },
+        { name: "MaxBalanceModule Proxy", address: "0x77B6c7aBB74653F1F48ac6Ebd1154532D13c41b3" },
+        { name: "TransferLimitModule Proxy", address: "0x6887c6c45B64C6E6D55dFADb2a4857C5DAD63D57" },
+        { name: "FinatradesTimelock", address: "0xf98Ee2EE41Ee008AEc3A17a87E06Aa0Dc4Cd38e4" }
+    ];
+    
+    const implementations = [
+        { name: "Token Implementation", address: "0x8C5DA9118B70A23b01451Bc6f0baEc9A41Aa6A12" },
+        { name: "ModularCompliance Implementation", address: "0xca244a40FEd494075195b9632c75377ccFB7C8ff" },
+        { name: "AssetRegistry Implementation", address: "0xBe125EFCBCeB60EC5Bf38e00158999E8Eb359347" },
+        { name: "RegulatoryReporting Implementation", address: "0xe4da869B9C55120aeAFc3c1e21d2C413531F18B2" },
+        { name: "CountryRestrictModule Implementation", address: "0xb9a74E93E9Ee80C083F256fbCA24929fF48cab60" },
+        { name: "MaxBalanceModule Implementation", address: "0xcab5474536C676b62e6bF1aDeb48CE0092c62d00" },
+        { name: "TransferLimitModule Implementation", address: "0x9fF75c5cE984849224a865f44e0d5bE9BeA12e0A" },
+        { name: "ClaimTopicsRegistry Implementation", address: "0x2DEF12D0C8448DD8866AcFD839aDbFE07b5C7A15" },
+        { name: "IdentityRegistry Implementation", address: "0x0BD1A2EdF1FCd608fC0537f6268E2b9c565a58B8" }
+    ];
+    
+    console.log("📋 PROXY CONTRACTS:");
+    console.log("══════════════════════════════════════════════════════════");
+    for (const contract of contracts) {
+        console.log(`${contract.name}:`);
+        console.log(`Address: ${contract.address}`);
+        console.log(`URL: https://polygonscan.com/address/${contract.address}#code`);
+        console.log("──────────────────────────────────────────────────────────");
     }
-  }
-  
-  console.log("\nVerification check complete!");
+    
+    console.log("\n📋 IMPLEMENTATION CONTRACTS:");
+    console.log("══════════════════════════════════════════════════════════");
+    for (const contract of implementations) {
+        console.log(`${contract.name}:`);
+        console.log(`Address: ${contract.address}`);
+        console.log(`URL: https://polygonscan.com/address/${contract.address}#code`);
+        console.log("──────────────────────────────────────────────────────────");
+    }
+    
+    console.log("\n✅ To verify these contracts manually:");
+    console.log("1. Visit each URL above");
+    console.log("2. Check for the green checkmark ✓ next to 'Contract'");
+    console.log("3. Verified contracts will show source code and Read/Write Contract tabs");
+    
+    console.log("\n🔧 To run automatic verification:");
+    console.log("npx hardhat run scripts/verify-all.js --network polygon");
 }
 
-checkVerificationStatus();
+checkVerificationStatus()
+    .then(() => process.exit(0))
+    .catch((error) => {
+        console.error(error);
+        process.exit(1);
+    });

@@ -1,0 +1,49 @@
+{
+  "network": "polygon",
+  "chainId": 137,
+  "deployer": "0xCE982AC6bc316Cf9d875652B84C7626B62a899eA",
+  "timestamp": "2025-01-20T22:00:00.000Z",
+  "status": "PARTIAL",
+  "contracts": {
+    "deployed": {
+      "ClaimTopicsRegistry": {
+        "proxy": "0x6Ec58c34DF899Ff9d67FD088Cd339bB75508Dd79",
+        "implementation": "0x2DEF12D0C8448DD8866AcFD839aDbFE07b5C7A15",
+        "txHash": "0x69c700d85c153b1db32101acb4710fa3bbdb6ce648c41ce40eb161142b310105"
+      },
+      "IdentityRegistry": {
+        "proxy": "0x25150414235289c688473340548698B5764651E3",
+        "implementation": "0x0BD1A2EdF1FCd608fC0537f6268E2b9c565a58B8",
+        "txHash": "0x052fce1fbef8a4b9da3a326e641d06c9b93db9b525de45ed1b37b1ad5fd67d39"
+      },
+      "CountryRestrictModule_Implementation": {
+        "address": "0x77E79399731e4198E89Fd426b6b4771869Fee2b9",
+        "note": "Implementation deployed, proxy deployment failed"
+      }
+    },
+    "pending": [
+      "CountryRestrictModule (proxy)",
+      "MaxBalanceModule",
+      "TransferLimitModule",
+      "ModularCompliance",
+      "AssetRegistry",
+      "FinatradesTimelock",
+      "FinatradesRWA_Enterprise",
+      "RegulatoryReportingOptimized"
+    ]
+  },
+  "deploymentCost": {
+    "spent": "~0.85 MATIC",
+    "remaining": "9.155 MATIC",
+    "estimatedTotal": "~2.5 MATIC"
+  },
+  "issues": [
+    "OpenZeppelin manifest corruption causing deployment failures",
+    "Proxy deployment reverted for CountryRestrictModule"
+  ],
+  "recommendations": [
+    "Clear .openzeppelin directory and restart deployment",
+    "Consider deploying contracts individually",
+    "Use manual proxy deployment if upgrades plugin continues to fail"
+  ]
+}

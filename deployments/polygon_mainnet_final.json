@@ -1,0 +1,30 @@
+{
+  "network": "polygon",
+  "chainId": 137,
+  "deployer": "0xCE982AC6bc316Cf9d875652B84C7626B62a899eA",
+  "timestamp": "2025-07-21T08:00:00.000Z",
+  "status": "COMPLETE",
+  "contracts": {
+    "ClaimTopicsRegistry": "0x6Ec58c34DF899Ff9d67FD088Cd339bB75508Dd79",
+    "IdentityRegistry": "0x25150414235289c688473340548698B5764651E3",
+    "CountryRestrictModule": "0x934b1C1AD4d205517B1a09A984c3F077cd99651A",
+    "MaxBalanceModule": "0x77B6c7aBB74653F1F48ac6Ebd1154532D13c41b3",
+    "TransferLimitModule": "0x6887c6c45B64C6E6D55dFADb2a4857C5DAD63D57",
+    "ModularCompliance": "0x123A014c135417b58BB3e04A5711C8F126cA95E8",
+    "AssetRegistry": "0x4717bED7008bc5aF62b3b91a29aaa24Bab034038",
+    "FinatradesTimelock": "0xf98Ee2EE41Ee008AEc3A17a87E06Aa0Dc4Cd38e4",
+    "Token": "0xED1c85A48EcD10654eD075F63F554cB3ac7faf6c",
+    "RegulatoryReportingOptimized": "0xcd5fC2E20D697394d66e30475981bA5F37fD160e"
+  },
+  "implementations": {
+    "ClaimTopicsRegistry": "0x2DEF12D0C8448DD8866AcFD839aDbFE07b5C7A15",
+    "IdentityRegistry": "0x0BD1A2EdF1FCd608fC0537f6268E2b9c565a58B8",
+    "CountryRestrictModule": "0xb9a74E93E9Ee80C083F256fbCA24929fF48cab60",
+    "MaxBalanceModule": "0xcab5474536C676b62e6bF1aDeb48CE0092c62d00",
+    "TransferLimitModule": "0x9fF75c5cE984849224a865f44e0d5bE9BeA12e0A",
+    "ModularCompliance": "0xca244a40FEd494075195b9632c75377ccFB7C8ff",
+    "AssetRegistry": "0xBe125EFCBCeB60EC5Bf38e00158999E8Eb359347",
+    "Token": "0x8C5DA9118B70A23b01451Bc6f0baEc9A41Aa6A12",
+    "RegulatoryReportingOptimized": "0xe4da869B9C55120aeAFc3c1e21d2C413531F18B2"
+  }
+}

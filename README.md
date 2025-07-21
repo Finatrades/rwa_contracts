@@ -1,403 +1,466 @@
-# Finatrades Universal RWA Platform - ERC-3643 Compliant
+# Finatrades RWA Smart Contracts
+
+## Table of Contents
+- [Executive Summary](#executive-summary)
+- [Architecture Overview](#architecture-overview)
+- [Deployed Contracts](#deployed-contracts)
+- [Contract Details](#contract-details)
+- [ABI Locations](#abi-locations)
+- [Integration Guide](#integration-guide)
+- [Security Architecture](#security-architecture)
+- [Compliance Flow](#compliance-flow)
+- [Development Setup](#development-setup)
+- [Testing](#testing)
+- [Audit Considerations](#audit-considerations)
 
 ## Executive Summary
 
-The Finatrades Universal RWA platform is an ERC-3643 (T-REX) compliant security token system that can tokenize **ANY type of real-world asset** - from gold and real estate to intellectual property and carbon credits. Built with institutional-grade security, unlimited scalability, and comprehensive compliance features.
+**Finatrades** is pioneering the tokenization of Real World Assets (RWAs) through a comprehensive ERC-3643 compliant security token system. Our platform enables institutions to tokenize any asset class—from real estate and commodities to art and intellectual property—while maintaining full regulatory compliance.
 
-## Contract Architecture
+### Key Features
+- **ERC-3643 (T-REX) Compliant**: Full implementation of the Token for Regulated EXchanges standard
+- **Multi-Asset Support**: Universal registry supporting any type of RWA
+- **Modular Compliance**: Pluggable compliance modules for different jurisdictions
+- **Identity Management**: On-chain KYC/AML with privacy preservation
+- **Regulatory Reporting**: Automated compliance reporting and monitoring
+- **Upgradeability**: UUPS proxy pattern for future enhancements
 
-The platform consists of several key components:
+### Technical Stack
+- **Blockchain**: Polygon Mainnet (Chain ID: 137)
+- **Solidity Version**: 0.8.19
+- **Framework**: Hardhat
+- **Standards**: ERC-3643, ERC-20, ERC-1967 (UUPS)
+- **Dependencies**: OpenZeppelin 4.9.0
 
-### Core Contracts
+## Architecture Overview
 
-1. **AssetRegistry** (V2 - NEW)
-   - Universal registry for ANY asset type
-   - Unlimited asset storage (no 1,000 limit)
-   - Flexible attribute system
-   - Revenue stream management
-   - Custodian tracking
-
-2. **FinatradesRWA_ERC3643_V2** (V2 - NEW)
-   - Enhanced security token with registry integration
-   - Asset-specific token tracking
-   - Per-asset dividend distribution
-   - Full ERC-3643 compliance
-
-3. **Identity Registry**
-   - Manages investor identities
-   - Links wallet addresses to identity contracts
-   - Verifies investor claims against requirements
-
-4. **Claim Topics Registry**
-   - Defines required claims for token holders
-   - Manages trusted claim issuers
-   - Configurable compliance requirements
-
-5. **Claim Issuer**
-   - Issues KYC/AML claims
-   - Manages investor verification
-   - Supports claim revocation and updates
-
-### Compliance Modules
-
-1. **Country Restrict Module**
-   - Enforces jurisdiction-based restrictions
-   - Configurable country whitelist/blacklist
-   - Cross-border transfer controls
-
-2. **Transfer Limit Module**
-   - Daily and monthly transfer limits
-   - Per-investor configurable limits
-   - Default limits for all investors
-
-3. **Max Balance Module**
-   - Maximum token holding restrictions
-   - Prevents concentration of ownership
-   - Configurable per investor type
-
-## Key Features
-
-### 1. ERC-3643 Compliance
-- Full T-REX standard implementation
-- Identity-based transfer restrictions
-- Modular compliance system
-- Claim-based verification
-
-### 2. Asset Management Options
-The platform offers two approaches for different needs:
-
-**Standard Token** (`0x56fBE81E9a84d2F87996419F53a2412Ae8B1658b`)
-- Built-in asset management
-- Suitable for focused portfolios (up to 1,000 assets)
-- Direct dividend distribution
-- Simpler deployment
-
-**Universal Token with Registry** (`0x713B4184cF7385e39A6c608ECF0885bd8516f91d`)
-- External asset registry for unlimited assets
-- ANY asset type supported (real estate, gold, art, IP, etc.)
-- Flexible attribute system
-- Per-asset token tracking
-- Asset-specific dividends
-
-Both tokens use the same compliance infrastructure, allowing you to choose based on your asset scale.
-
-### 3. Security Features
-- Role-based access control (7 distinct roles)
-- Reentrancy protection
-- Pausable transfers
-- Emergency freeze capabilities
-- Timelock governance (48-hour delay)
-- UUPS upgradeability pattern
-
-
-## 🛠️ Installation
-
-```bash
-# Clone the repository
-git clone https://github.com/finatrades/rwa_contracts.git
-cd rwa_contracts
-
-# Install dependencies
-npm install
-
-# Copy environment variables
-cp .env.example .env
-# Edit .env with your configuration
-
-# Compile contracts
-npx hardhat compile
-
-# Run tests
-npx hardhat test
-
-# Deploy V2 Universal Asset System to Polygon mainnet
-npx hardhat run scripts/deploy-universal-rwa.js --network polygon
-
-# Configure the system
-npx hardhat run scripts/setup-universal-rwa.js --network polygon
-
-# Deploy to testnet first (recommended)
-npx hardhat run scripts/deploy-universal-rwa.js --network polygonAmoy
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                           Finatrades RWA Ecosystem                           │
+└─────────────────────────────────────────────────────────────────────────────┘
+                                        │
+        ┌───────────────────────────────┴────────────────────────────────┐
+        │                                                                 │
+┌───────▼──────────┐                                          ┌──────────▼─────────┐
+│  Security Token  │                                          │   Asset Registry   │
+│  (ERC-3643)      │◄─────────────────────────────────────────┤   (Universal RWA)  │
+└──────┬───────────┘                                          └────────────────────┘
+       │                                                                 
+       ├──────────────┬────────────────┬─────────────────┬──────────────┐
+       │              │                │                 │              │
+┌──────▼──────┐ ┌─────▼──────┐ ┌──────▼──────┐ ┌───────▼──────┐ ┌─────▼───────┐
+│  Identity    │ │ Compliance │ │  Modules    │ │  Regulatory  │ │  Timelock   │
+│  Registry    │ │  Engine    │ │  (3 Types) │ │  Reporting   │ │  Governance │
+└─────────────┘ └────────────┘ └─────────────┘ └──────────────┘ └─────────────┘
 ```
 
-## 🔧 Configuration
+### System Flow
 
-### Environment Variables
+```mermaid
+sequenceDiagram
+    participant User
+    participant Token
+    participant Identity
+    participant Compliance
+    participant Modules
+    participant Asset
 
-Create a `.env` file with the following variables:
-
-```env
-PRIVATE_KEY=your_private_key_here
-POLYGON_RPC_URL=https://polygon-rpc.com
-POLYGON_MUMBAI_RPC_URL=https://rpc-mumbai.maticvigil.com
-POLYGONSCAN_API_KEY=your_polygonscan_api_key
+    User->>Token: Transfer Request
+    Token->>Identity: Verify Identity
+    Identity-->>Token: KYC Status
+    Token->>Compliance: Check Compliance
+    Compliance->>Modules: Run All Checks
+    Modules-->>Compliance: Pass/Fail
+    Compliance-->>Token: Approved/Rejected
+    Token->>Asset: Update Records
+    Token-->>User: Transfer Result
 ```
-
-### Compliance Configuration
-
-1. **Set Allowed Countries**
-   ```javascript
-   // Example: Allow USA and UK
-   await countryRestrictModule.setCountryAllowed(840, true); // USA
-   await countryRestrictModule.setCountryAllowed(826, true); // UK
-   ```
-
-2. **Configure Transfer Limits**
-   ```javascript
-   // Set default limits
-   await transferLimitModule.setDefaultLimits(
-     ethers.utils.parseEther("100000"), // Daily limit
-     ethers.utils.parseEther("1000000") // Monthly limit
-   );
-   ```
-
-3. **Add Trusted Claim Issuers**
-   ```javascript
-   // Add claim issuer for KYC/AML
-   await claimTopicsRegistry.addTrustedIssuer(
-     claimIssuerAddress,
-     [1, 2, 4] // KYC, AML, Country topics
-   );
-   ```
 
 ## Deployed Contracts
 
-### Polygon Mainnet (10 Fresh Contracts - July 2025 ✅)
+### Polygon Mainnet Deployment (January 21, 2025)
 
-#### Identity & Claims System
-| Contract | Address | Purpose |
-|----------|---------|---------|
-| ClaimTopicsRegistry | [`0xeCf537CADeBd2951776f3AC3c1e9b76218d6ecE4`](https://polygonscan.com/address/0xeCf537CADeBd2951776f3AC3c1e9b76218d6ecE4) | Defines required KYC/AML claims |
-| IdentityRegistry | [`0x59A1923E694061b9A49b2eC92AeeF99077f42532`](https://polygonscan.com/address/0x59A1923E694061b9A49b2eC92AeeF99077f42532) | Links wallets to verified identities |
-| ClaimIssuer | [`0x625986DD1A10859C7F6326eE50B9901D5AD82170`](https://polygonscan.com/address/0x625986DD1A10859C7F6326eE50B9901D5AD82170) | Issues verified investor claims |
+#### Main Contracts (Proxy Addresses - Use These for Integration)
 
-#### Compliance Modules
-| Contract | Address | Purpose |
-|----------|---------|---------|
-| ModularCompliance | [`0x115f87dC7bB192924069b4291DAF0Dcd39C0A76b`](https://polygonscan.com/address/0x115f87dC7bB192924069b4291DAF0Dcd39C0A76b) | Orchestrates all compliance rules |
-| CountryRestrictModule | [`0x620818526106cc35ab598D2500632A62e0176619`](https://polygonscan.com/address/0x620818526106cc35ab598D2500632A62e0176619) | Country-based transfer restrictions |
-| TransferLimitModule | [`0xbb109a19000dF7ca3062161794405DAC026DB4E5`](https://polygonscan.com/address/0xbb109a19000dF7ca3062161794405DAC026DB4E5) | Daily/monthly transfer limits |
-| MaxBalanceModule | [`0x64BC91aba0EF92F4565b076Ea1382B2d82d418cD`](https://polygonscan.com/address/0x64BC91aba0EF92F4565b076Ea1382B2d82d418cD) | Maximum balance restrictions |
+| Contract | Proxy Address | Implementation | Purpose |
+|----------|---------------|----------------|---------|
+| **Token** | [`0xED1c85A48EcD10654eD075F63F554cB3ac7faf6c`](https://polygonscan.com/address/0xED1c85A48EcD10654eD075F63F554cB3ac7faf6c) | `0x8C5DA9118B70A23b01451Bc6f0baEc9A41Aa6A12` | ERC-3643 Security Token |
+| **IdentityRegistry** | [`0x25150414235289c688473340548698B5764651E3`](https://polygonscan.com/address/0x25150414235289c688473340548698B5764651E3) | `0x0BD1A2EdF1FCd608fC0537f6268E2b9c565a58B8` | KYC/Identity Management |
+| **ModularCompliance** | [`0x123A014c135417b58BB3e04A5711C8F126cA95E8`](https://polygonscan.com/address/0x123A014c135417b58BB3e04A5711C8F126cA95E8) | `0xca244a40FEd494075195b9632c75377ccFB7C8ff` | Compliance Orchestration |
+| **AssetRegistry** | [`0x4717bED7008bc5aF62b3b91a29aaa24Bab034038`](https://polygonscan.com/address/0x4717bED7008bc5aF62b3b91a29aaa24Bab034038) | `0xBe125EFCBCeB60EC5Bf38e00158999E8Eb359347` | RWA Asset Management |
+| **RegulatoryReporting** | [`0xcd5fC2E20D697394d66e30475981bA5F37fD160e`](https://polygonscan.com/address/0xcd5fC2E20D697394d66e30475981bA5F37fD160e) | `0xe4da869B9C55120aeAFc3c1e21d2C413531F18B2` | Compliance Reporting |
 
-#### Token & Asset Management
-| Contract | Address | Purpose |
-|----------|---------|---------|
-| FinatradesRWA Token | [`0x414A484985771C2CFDA215FB20C48ed037eE409b`](https://polygonscan.com/address/0x414A484985771C2CFDA215FB20C48ed037eE409b) | Main ERC-3643 security token |
-| AssetRegistry | [`0xB678e16e773790B0FD56D36a516731dfA8761b77`](https://polygonscan.com/address/0xB678e16e773790B0FD56D36a516731dfA8761b77) | Universal asset registry (unlimited) |
+#### Supporting Contracts
 
-#### Governance
-| Contract | Address | Purpose |
-|----------|---------|---------|
-| Timelock | [`0xCF3FA612F1eF813e31Af012B2D77eA8f3d191F82`](https://polygonscan.com/address/0xCF3FA612F1eF813e31Af012B2D77eA8f3d191F82) | 48-hour delay for critical changes |
+| Contract | Proxy Address | Implementation | Purpose |
+|----------|---------------|----------------|---------|
+| **ClaimTopicsRegistry** | [`0x6Ec58c34DF899Ff9d67FD088Cd339bB75508Dd79`](https://polygonscan.com/address/0x6Ec58c34DF899Ff9d67FD088Cd339bB75508Dd79) | `0x2DEF12D0C8448DD8866AcFD839aDbFE07b5C7A15` | Identity Claim Topics |
+| **CountryRestrictModule** | [`0x934b1C1AD4d205517B1a09A984c3F077cd99651A`](https://polygonscan.com/address/0x934b1C1AD4d205517B1a09A984c3F077cd99651A) | `0xb9a74E93E9Ee80C083F256fbCA24929fF48cab60` | Geographic Restrictions |
+| **MaxBalanceModule** | [`0x77B6c7aBB74653F1F48ac6Ebd1154532D13c41b3`](https://polygonscan.com/address/0x77B6c7aBB74653F1F48ac6Ebd1154532D13c41b3) | `0xcab5474536C676b62e6bF1aDeb48CE0092c62d00` | Balance Limits |
+| **TransferLimitModule** | [`0x6887c6c45B64C6E6D55dFADb2a4857C5DAD63D57`](https://polygonscan.com/address/0x6887c6c45B64C6E6D55dFADb2a4857C5DAD63D57) | `0x9fF75c5cE984849224a865f44e0d5bE9BeA12e0A` | Transfer Limits |
+| **FinatradesTimelock** | [`0xf98Ee2EE41Ee008AEc3A17a87E06Aa0Dc4Cd38e4`](https://polygonscan.com/address/0xf98Ee2EE41Ee008AEc3A17a87E06Aa0Dc4Cd38e4) | N/A (Non-upgradeable) | 48-hour Governance Delay |
 
-**Network**: Polygon Mainnet (ChainID: 137)
-**Deployer**: `0xCE982AC6bc316Cf9d875652B84C7626B62a899eA`
+### Deployment Information
+- **Network**: Polygon Mainnet (Chain ID: 137)
+- **Deployer**: `0xCE982AC6bc316Cf9d875652B84C7626B62a899eA`
+- **Deployment Date**: January 21, 2025
+- **Total Gas Cost**: ~2.5 MATIC
+- **Verification Status**: All contracts verified on Polygonscan ✅
 
+## Contract Details
 
-## 🌍 Supported Asset Types
+### 1. Token Contract (ERC-3643 Security Token)
+**Address**: `0xED1c85A48EcD10654eD075F63F554cB3ac7faf6c`
 
-The platform can tokenize literally ANY real-world asset:
+The main security token implementing the ERC-3643 standard with additional features:
 
-| Category | Examples | Use Cases |
-|----------|----------|-----------|
-| **Real Estate** | Properties, Land, REITs | Fractional ownership, Rental income |
-| **Precious Metals** | Gold, Silver, Platinum | Commodity backing, Store of value |
-| **Cryptocurrency** | Wrapped BTC, ETH, Stablecoins | Cross-chain assets, DeFi integration |
-| **Art & Collectibles** | Paintings, Sculptures, Rare items | Fractional art ownership, Museums |
-| **Intellectual Property** | Patents, Copyrights, Trademarks | Royalty sharing, IP licensing |
-| **Equity** | Company shares, Startup equity | Private markets, Employee shares |
-| **Debt Instruments** | Bonds, Loans, Receivables | Fixed income, Trade finance |
-| **Commodities** | Oil, Gas, Agricultural products | Supply chain, Futures |
-| **Carbon Credits** | VCS, Gold Standard credits | ESG investing, Offsetting |
-| **Luxury Goods** | Watches, Jewelry, Cars | Fractional luxury ownership |
-| **Infrastructure** | Solar farms, Toll roads | Yield generation, Public-private |
-| **Other** | Any asset with value | Future innovations |
-
-## 📖 Usage Examples
-
-### Tokenizing Gold
-```javascript
-// Register 1kg gold bar
-const goldId = ethers.keccak256(ethers.toUtf8Bytes("GOLD-BAR-001"));
-await assetRegistry.registerAsset(
-    goldId,
-    "1kg Gold Bar LBMA",
-    2, // PRECIOUS_METALS
-    65000e6, // $65,000
-    "ipfs://QmGoldCert",
-    vaultAddress
-);
-
-// Set attributes
-await assetRegistry.setNumericAttribute(goldId, "weight", 1000); // grams
-await assetRegistry.setNumericAttribute(goldId, "purity", 9999); // 99.99%
-
-// Tokenize: 1000 tokens = 1kg
-await token.tokenizeAsset(goldId, ethers.parseEther("1000"), investor);
+```solidity
+// Key Functions
+function transfer(address to, uint256 amount) // Compliance-checked transfer
+function mint(address account, uint256 amount) // Restricted minting
+function burn(address account, uint256 amount) // Token burning
+function freeze(address account) // Freeze investor account
+function freezePartialTokens(address account, uint256 amount) // Freeze specific amount
+function setIdentityRegistry(address _identityRegistry) // Update identity registry
+function setCompliance(address _compliance) // Update compliance contract
+function recoveryAddress(address lostWallet, address newWallet) // Recover lost tokens
 ```
 
-### Tokenizing Real Estate
-```javascript
-// Register property
-const propId = ethers.keccak256(ethers.toUtf8Bytes("NYC-PROP-001"));
-await assetRegistry.registerAsset(
-    propId,
-    "Manhattan Office",
-    1, // REAL_ESTATE
-    50000000e6, // $50M
-    "ipfs://QmPropertyDocs",
-    propertyManager
-);
+**Access Control Roles**:
+- `OWNER_ROLE`: Full administrative control
+- `AGENT_ROLE`: Mint, burn, freeze operations
+- `UPGRADER_ROLE`: Contract upgrade authorization
 
-// Create rental income stream
-await assetRegistry.createRevenueStream(
-    propId,
-    250000e6, // $250k/month
-    30 * 86400, // Monthly
-    rentCollector
-);
+### 2. IdentityRegistry
+**Address**: `0x25150414235289c688473340548698B5764651E3`
 
-// Tokenize for fractional ownership
-await token.tokenizeAsset(propId, ethers.parseEther("1000000"), owner);
+Manages on-chain identities and KYC verification:
+
+```solidity
+// Key Functions
+function registerIdentity(address _userAddress, address _identity, uint16 _country)
+function updateIdentity(address _userAddress, address _identity)
+function updateCountry(address _userAddress, uint16 _country)
+function deleteIdentity(address _userAddress)
+function isVerified(address _userAddress) returns (bool)
+function identity(address _userAddress) returns (address)
 ```
 
-## Access Control Matrix
+### 3. ModularCompliance
+**Address**: `0x123A014c135417b58BB3e04A5711C8F126cA95E8`
 
-| Role | Permissions | Risk Level |
-|------|-------------|------------|
-| DEFAULT_ADMIN_ROLE | Grant/revoke all roles | Critical |
-| OWNER_ROLE | Contract configuration, compliance settings | High |
-| AGENT_ROLE | Mint/burn tokens, freeze addresses | High |
-| UPGRADER_ROLE | Authorize contract upgrades | Critical |
-| ASSET_MANAGER_ROLE | Add/update assets, set rental info | Medium |
-| CORPORATE_ACTIONS_ROLE | Deposit dividends | Medium |
-| CLAIM_ISSUER_ROLE | Issue/revoke identity claims | High |
+Orchestrates compliance rules through pluggable modules:
 
-## Security Mechanisms
+```solidity
+// Key Functions
+function bindToken(address _token)
+function addModule(address _module)
+function removeModule(address _module)
+function isTransferValid(address _from, address _to, uint256 _amount) returns (bool)
+function transferred(address _from, address _to, uint256 _amount)
+function getModules() returns (address[])
+```
 
-### 1. Identity Verification
-- ERC-734/735 identity contracts
-- Claim-based verification system
-- Trusted issuer management
-- Required claims: KYC (topic 1), AML (topic 2), Country (topic 4)
+### 4. AssetRegistry
+**Address**: `0x4717bED7008bc5aF62b3b91a29aaa24Bab034038`
 
-### 2. Transfer Restrictions
-- Identity verification check
-- Country-based restrictions
-- Daily/monthly transfer limits
-- Maximum balance restrictions
-- Frozen address checks
+Universal registry for any type of Real World Asset:
 
-### 3. Emergency Controls
-- Global pause mechanism
-- Individual address freezing
-- Partial token freezing
-- Recovery functions for lost wallets
-- Timelock delay for critical operations
+```solidity
+// Key Functions
+function registerAsset(
+    bytes32 assetId,
+    string memory name,
+    AssetCategory category,
+    uint256 valuationAmount,
+    string memory metadataURI,
+    address custodian
+)
+function setTextAttribute(bytes32 assetId, string memory key, string memory value)
+function setNumericAttribute(bytes32 assetId, string memory key, uint256 value)
+function setBooleanAttribute(bytes32 assetId, string memory key, bool value)
+function setAddressAttribute(bytes32 assetId, string memory key, address value)
+function updateAssetValuation(bytes32 assetId, uint256 newValuation, string memory source)
+function createRevenueStream(bytes32 assetId, uint256 amount, uint256 frequency, address collector)
+```
 
-## Testing Coverage
+**Asset Categories**:
+- REAL_ESTATE
+- COMMODITIES
+- ART_COLLECTIBLES
+- INTELLECTUAL_PROPERTY
+- FINANCIAL_INSTRUMENTS
+- INFRASTRUCTURE
+- NATURAL_RESOURCES
+- OTHER
 
-### Unit Tests
-- [x] Identity management (IdentityRegistry)
-- [x] Claim verification (ClaimIssuer)
-- [x] Compliance modules (Country, TransferLimit, MaxBalance)
-- [x] Token transfers with restrictions
-- [x] Asset management functions
-- [x] Dividend distribution
-- [x] Emergency functions
-- [x] Access control
+### 5. Compliance Modules
 
-### Integration Tests  
-- [x] Multi-module compliance checks
-- [x] Identity + Compliance + Token flow
-- [x] Upgrade mechanism (UUPS)
-- [x] Timelock operations
+#### CountryRestrictModule
+**Address**: `0x934b1C1AD4d205517B1a09A984c3F077cd99651A`
 
-### Security Tests
-- [x] Reentrancy protection
-- [x] Access control bypass attempts
-- [x] Integer overflow/underflow (Solidity 0.8.19)
-- [x] Front-running mitigation
+```solidity
+function addCountryRestriction(uint16 _country)
+function removeCountryRestriction(uint16 _country)
+function batchRestrictCountries(uint16[] calldata _countries)
+function isTransferAllowed(address _from, address _to, uint256 _amount) returns (bool)
+```
 
-## Audit Focus Areas
+#### MaxBalanceModule
+**Address**: `0x77B6c7aBB74653F1F48ac6Ebd1154532D13c41b3`
 
-### 1. Identity System
-- Verify identity registry cannot be bypassed
-- Check claim validation logic
-- Ensure trusted issuer management is secure
-- Validate identity recovery mechanisms
+```solidity
+function setDefaultMaxBalance(uint256 _defaultMax)
+function setMaxBalance(address _user, uint256 _max)
+function batchSetMaxBalance(address[] calldata _users, uint256[] calldata _maxBalances)
+function getMaxBalance(address _user) returns (uint256)
+```
 
-### 2. Compliance Modules
-- Test module interaction and precedence
-- Verify modules cannot be bypassed
-- Check for module upgrade risks
-- Validate restriction enforcement
+#### TransferLimitModule
+**Address**: `0x6887c6c45B64C6E6D55dFADb2a4857C5DAD63D57`
 
-### 3. Asset Management
-- Verify asset valuation update controls
-- Check dividend calculation accuracy
-- Test for rounding errors in distributions
-- Validate rental income flow
+```solidity
+function setDefaultLimits(uint256 _dailyLimit, uint256 _monthlyLimit)
+function setTransferLimit(address _user, uint256 _dailyLimit, uint256 _monthlyLimit)
+function getTransferStats(address _user) returns (uint256 dailyTransferred, uint256 monthlyTransferred)
+```
 
-### 4. Access Control
-- Verify role separation
-- Check for privilege escalation
-- Test emergency function restrictions
-- Validate timelock effectiveness
+### 6. RegulatoryReporting
+**Address**: `0xcd5fC2E20D697394d66e30475981bA5F37fD160e`
 
-## Known Issues & Mitigations
+Automated regulatory reporting and compliance monitoring:
 
-1. **Contract Size**: Main token contract approaches size limit
-   - Mitigation: Optimizer enabled with runs=1
-   - Alternative: Further modularization if needed
+```solidity
+// Key Functions
+function generateTransferReport(uint256 fromTimestamp, uint256 toTimestamp)
+function getHolderCount() returns (uint256)
+function getHolderList(uint256 offset, uint256 limit) returns (address[])
+function getComplianceViolations(address investor) returns (uint256)
+function generateComplianceReport() returns (bytes)
+```
 
-2. **Gas Costs**: Complex compliance checks increase transfer costs
-   - Mitigation: Batch operations where possible
-   - Gas usage: ~150k-200k per compliant transfer
+## ABI Locations
 
-3. **Upgrade Risks**: UUPS pattern requires careful access control
-   - Mitigation: Timelock + multi-role approval
-   - Upgrade function restricted to UPGRADER_ROLE
+All contract ABIs are located in the `artifacts/contracts/` directory:
 
-## Deployment Status
+```
+artifacts/contracts/
+├── token/
+│   └── Token.sol/
+│       └── Token.json                    # Main token ABI
+├── registry/
+│   ├── IdentityRegistry.sol/
+│   │   └── IdentityRegistry.json         # Identity registry ABI
+│   ├── ClaimTopicsRegistry.sol/
+│   │   └── ClaimTopicsRegistry.json      # Claim topics ABI
+│   └── AssetRegistry.sol/
+│       └── AssetRegistry.json            # Asset registry ABI
+├── compliance/
+│   ├── ModularCompliance.sol/
+│   │   └── ModularCompliance.json        # Compliance engine ABI
+│   └── modular/
+│       ├── CountryRestrictModule.sol/
+│       │   └── CountryRestrictModule.json
+│       ├── MaxBalanceModule.sol/
+│       │   └── MaxBalanceModule.json
+│       └── TransferLimitModule.sol/
+│           └── TransferLimitModule.json
+├── reporting/
+│   └── RegulatoryReportingOptimized.sol/
+│       └── RegulatoryReportingOptimized.json
+└── governance/
+    └── FinatradesTimelock.sol/
+        └── FinatradesTimelock.json
+```
 
-### Live on Polygon Mainnet
-- **10 Contracts**: Freshly deployed (July 2025) ✅
-- **Architecture**: Complete RWA tokenization platform
-- **Compliance**: All modules active ✅
-- **Identity System**: Ready for KYC/AML ✅
-- **Asset Support**: From single assets to unlimited portfolios ✅
+### Loading ABIs in JavaScript/TypeScript
 
-### Platform Capabilities
-- **Any Asset Type**: Real estate, gold, art, IP, carbon credits, etc.
-- **Flexible Scale**: Choose standard token or registry-based approach
-- **Full Compliance**: ERC-3643 with modular restrictions
-- **Revenue Distribution**: Built-in dividend mechanisms
-- **Institutional Ready**: Timelock governance and upgrade controls
+```javascript
+// Example: Loading Token ABI
+const TokenABI = require('./artifacts/contracts/token/Token.sol/Token.json').abi;
 
-### Technical Details
-- **Compiler**: Solidity 0.8.19
-- **Optimizer**: Enabled (runs: 1)
-- **Network**: Polygon Mainnet
-- **Architecture**: UUPS Upgradeable
-- **Gas Used**: ~0.7 POL for core system
+// Using with ethers.js
+const token = new ethers.Contract(
+    '0xED1c85A48EcD10654eD075F63F554cB3ac7faf6c',
+    TokenABI,
+    signer
+);
 
-## Next Steps
+// Using with web3.js
+const token = new web3.eth.Contract(
+    TokenABI,
+    '0xED1c85A48EcD10654eD075F63F554cB3ac7faf6c'
+);
+```
 
-1. **Deploy V2 System**:
-   ```bash
-   npx hardhat run scripts/deploy-universal-rwa.js --network polygon
-   ```
+## Integration Guide
 
-2. **Configure System**:
-   ```bash
-   npx hardhat run scripts/setup-universal-rwa.js --network polygon
-   ```
+### 1. Setting Up Identity (KYC/AML)
 
-3. **Start Tokenizing**: Register and tokenize ANY real-world asset!
+```javascript
+// Deploy identity contract for investor
+const Identity = await ethers.getContractFactory("Identity");
+const identity = await Identity.deploy(investorAddress);
 
-## Contact
+// Register in IdentityRegistry
+const identityRegistry = await ethers.getContractAt(
+    "IdentityRegistry",
+    "0x25150414235289c688473340548698B5764651E3"
+);
 
-**Technical Support**: tech@finatrades.com  
-**Security Contact**: security@finatrades.com  
-**Asset Onboarding**: assets@finatrades.com
+await identityRegistry.registerIdentity(
+    investorAddress,
+    identity.address,
+    840 // USA country code
+);
+
+// Add required claims
+await identity.addClaim(
+    7, // KYC claim topic
+    1, // Scheme
+    issuerAddress,
+    signature,
+    data,
+    uri
+);
+```
+
+### 2. Minting Tokens
+
+```javascript
+const token = await ethers.getContractAt(
+    "Token",
+    "0xED1c85A48EcD10654eD075F63F554cB3ac7faf6c"
+);
+
+// Only AGENT_ROLE can mint
+await token.mint(investorAddress, ethers.parseEther("1000"));
+```
+
+### 3. Configuring Compliance Rules
+
+```javascript
+const compliance = await ethers.getContractAt(
+    "ModularCompliance",
+    "0x123A014c135417b58BB3e04A5711C8F126cA95E8"
+);
+
+// Add compliance modules
+await compliance.addModule("0x934b1C1AD4d205517B1a09A984c3F077cd99651A"); // Country restrict
+await compliance.addModule("0x77B6c7aBB74653F1F48ac6Ebd1154532D13c41b3"); // Max balance
+await compliance.addModule("0x6887c6c45B64C6E6D55dFADb2a4857C5DAD63D57"); // Transfer limit
+
+// Configure country restrictions
+const countryModule = await ethers.getContractAt(
+    "CountryRestrictModule",
+    "0x934b1C1AD4d205517B1a09A984c3F077cd99651A"
+);
+await countryModule.batchRestrictCountries([850, 408]); // Block Virgin Islands, North Korea
+```
+
+### 4. Registering Assets
+
+```javascript
+const assetRegistry = await ethers.getContractAt(
+    "AssetRegistry",
+    "0x4717bED7008bc5aF62b3b91a29aaa24Bab034038"
+);
+
+// Register a real estate asset
+const assetId = ethers.id("PROPERTY-001");
+await assetRegistry.registerAsset(
+    assetId,
+    "Manhattan Commercial Building",
+    0, // REAL_ESTATE category
+    100000000, // $100M valuation
+    "ipfs://QmAssetMetadata",
+    custodianAddress
+);
+
+// Set asset attributes
+await assetRegistry.setTextAttribute(assetId, "address", "123 Wall St, NYC");
+await assetRegistry.setNumericAttribute(assetId, "sqft", 50000);
+await assetRegistry.setNumericAttribute(assetId, "yearBuilt", 1985);
+await assetRegistry.setBooleanAttribute(assetId, "leased", true);
+```
+
+## Security Architecture
+
+### 1. Access Control Matrix
+
+| Contract | Role | Permissions |
+|----------|------|-------------|
+| **Token** | OWNER_ROLE | All admin functions, role management |
+| | AGENT_ROLE | Mint, burn, freeze, forced transfers |
+| | UPGRADER_ROLE | Authorize upgrades |
+| **IdentityRegistry** | OWNER_ROLE | All functions |
+| | IDENTITY_REGISTRAR_ROLE | Register/update identities |
+| | AGENT_ROLE | Read functions only |
+| **AssetRegistry** | ASSET_MANAGER_ROLE | Register/update assets |
+| | AUDITOR_ROLE | Read all asset data |
+| **ModularCompliance** | OWNER_ROLE | Add/remove modules, bind token |
+
+### 2. Emergency Controls
+
+- **Pause Mechanism**: All critical contracts can be paused
+- **Token Recovery**: Lost tokens can be recovered with proper authorization
+- **Freezing**: Individual accounts or specific amounts can be frozen
+- **Timelock**: 48-hour delay for governance actions
+
+### 3. Upgrade Security
+
+All upgradeable contracts use the UUPS pattern with:
+- Separate UPGRADER_ROLE required for upgrades
+- Storage gap for future variables
+- Initializer protection against re-initialization
+
+## Compliance Flow
+
+```
+Transfer Request → Identity Check → Compliance Modules → Transfer Execution
+                        ↓                    ↓
+                   [FAIL: Reject]      [Module Checks]
+                                            ↓
+                                    ┌───────────────┐
+                                    │ Country Check │
+                                    │ Balance Check │
+                                    │ Limit Check   │
+                                    └───────────────┘
+                                            ↓
+                                    [ALL PASS: Execute]
+```
+
+### Compliance Module Execution
+
+1. **Pre-Transfer**: All modules must return `true` for transfer approval
+2. **Post-Transfer**: Modules update their internal state (e.g., transfer counters)
+3. **Atomic**: If any module fails, entire transfer is reverted
+
+## Support and Resources
+
+### Official Channels
+- **Website**: https://finatrades.com
+- **Support & Security**: blockchain@finatrades.com
+
+### Repository Structure
+
+```
+rwa_contracts/
+├── contracts/           # Solidity contracts
+├── scripts/            # Deployment scripts
+├── test/              # Test files
+├── artifacts/         # Compiled contracts and ABIs
+├── deployments/       # Deployment addresses
+├── docs/             # Additional documentation
+└── audits/           # Audit reports
+```
+
+### License
+
+MIT License - Copyright (c) 2025 Finatrades
+
+---
+
+**Deployment Date**: July 21, 2025  
+**Network**: Polygon Mainnet  
+**Version**: 1.2.0

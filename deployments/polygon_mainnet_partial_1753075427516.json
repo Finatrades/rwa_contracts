@@ -1,0 +1,20 @@
+{
+  "network": "polygon",
+  "chainId": 137,
+  "deployer": "0xCE982AC6bc316Cf9d875652B84C7626B62a899eA",
+  "timestamp": "2025-07-21T05:23:21.934Z",
+  "contracts": {
+    "ClaimTopicsRegistry": "0x6Ec58c34DF899Ff9d67FD088Cd339bB75508Dd79",
+    "IdentityRegistry": "0x25150414235289c688473340548698B5764651E3",
+    "CountryRestrictModule": "0x934b1C1AD4d205517B1a09A984c3F077cd99651A",
+    "MaxBalanceModule": "0x77B6c7aBB74653F1F48ac6Ebd1154532D13c41b3",
+    "TransferLimitModule": "0x6887c6c45B64C6E6D55dFADb2a4857C5DAD63D57"
+  },
+  "implementations": {
+    "ClaimTopicsRegistry": "0x2DEF12D0C8448DD8866AcFD839aDbFE07b5C7A15",
+    "IdentityRegistry": "0x0BD1A2EdF1FCd608fC0537f6268E2b9c565a58B8",
+    "CountryRestrictModule": "0xb9a74E93E9Ee80C083F256fbCA24929fF48cab60",
+    "MaxBalanceModule": "0xcab5474536C676b62e6bF1aDeb48CE0092c62d00",
+    "TransferLimitModule": "0x9fF75c5cE984849224a865f44e0d5bE9BeA12e0A"
+  }
+}

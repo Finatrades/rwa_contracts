@@ -10,21 +10,34 @@ dotenv.config();
 
 const config: HardhatUserConfig = {
   solidity: {
-    version: "0.8.19",
-    settings: {
-      optimizer: {
-        enabled: true,
-        runs: 1,
-        details: {
-          yul: true,
-          yulDetails: {
-            stackAllocation: true,
-            optimizerSteps: "dhfoDgvulfnTUtnIf"
-          }
-        }
+    compilers: [
+      {
+        version: "0.8.19",
+        settings: {
+          optimizer: {
+            enabled: true,
+            runs: 999999,
+            details: {
+              yul: true,
+              yulDetails: {
+                stackAllocation: true,
+                optimizerSteps: "dhfoDgvulfnTUtnIf"
+              }
+            }
+          },
+          viaIR: false,
+        },
       },
-      viaIR: false,
-    },
+      {
+        version: "0.8.17",
+        settings: {
+          optimizer: {
+            enabled: true,
+            runs: 999999,
+          },
+        },
+      },
+    ],
   },
   networks: {
     hardhat: {
