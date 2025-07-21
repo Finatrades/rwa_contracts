@@ -78,7 +78,7 @@ sequenceDiagram
 
 ## Deployed Contracts
 
-### Polygon Mainnet Deployment (January 21, 2025)
+### Polygon Mainnet Deployment (July 21, 2025)
 
 #### Main Contracts (Proxy Addresses - Use These for Integration)
 
@@ -103,7 +103,7 @@ sequenceDiagram
 ### Deployment Information
 - **Network**: Polygon Mainnet (Chain ID: 137)
 - **Deployer**: `0xCE982AC6bc316Cf9d875652B84C7626B62a899eA`
-- **Deployment Date**: January 21, 2025
+- **Deployment Date**: July 21, 2025
 - **Total Gas Cost**: ~2.5 MATIC
 - **Verification Status**: All contracts verified on Polygonscan ✅
 
