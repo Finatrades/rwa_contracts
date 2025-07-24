@@ -32,6 +32,32 @@
 - **Standards**: ERC-3643, ERC-20, ERC-1967 (UUPS)
 - **Dependencies**: OpenZeppelin 4.9.0
 
+### Contract Variants
+
+Finatrades offers three contract implementations to suit different deployment needs:
+
+1. **FinatradesRWA_Core**: Optimized for Ethereum mainnet (under 24KB limit)
+   - Essential RWA tokenization features
+   - ERC-3643 compliance
+   - Basic dividend distribution
+   - Suitable for gas-constrained networks
+
+2. **FinatradesRWA_Extended**: Full-featured implementation
+   - All Core features plus:
+   - Comprehensive asset lifecycle management
+   - Advanced dividend system with snapshots
+   - Revenue stream tracking
+   - Detailed event logging
+   - Note: Exceeds 24KB limit, requires L2/sidechain deployment
+
+3. **FinatradesRWA_Enterprise**: Complete institutional solution (Currently Deployed)
+   - All Extended features plus:
+   - Integrated regulatory reporting
+   - Automated compliance monitoring
+   - Transaction analytics
+   - Audit trail generation
+   - Perfect for Polygon/L2 deployment with no size constraints
+
 ## Architecture Overview
 
 ```
@@ -84,7 +110,7 @@ sequenceDiagram
 
 | Contract | Proxy Address | Implementation | Purpose |
 |----------|---------------|----------------|---------|
-| **Token** | [`0xED1c85A48EcD10654eD075F63F554cB3ac7faf6c`](https://polygonscan.com/address/0xED1c85A48EcD10654eD075F63F554cB3ac7faf6c) | `0x8C5DA9118B70A23b01451Bc6f0baEc9A41Aa6A12` | ERC-3643 Security Token |
+| **FinatradesRWA_Enterprise** | [`0xED1c85A48EcD10654eD075F63F554cB3ac7faf6c`](https://polygonscan.com/address/0xED1c85A48EcD10654eD075F63F554cB3ac7faf6c) | `0x8C5DA9118B70A23b01451Bc6f0baEc9A41Aa6A12` | ERC-3643 Security Token (Enterprise) |
 | **IdentityRegistry** | [`0x25150414235289c688473340548698B5764651E3`](https://polygonscan.com/address/0x25150414235289c688473340548698B5764651E3) | `0x0BD1A2EdF1FCd608fC0537f6268E2b9c565a58B8` | KYC/Identity Management |
 | **ModularCompliance** | [`0x123A014c135417b58BB3e04A5711C8F126cA95E8`](https://polygonscan.com/address/0x123A014c135417b58BB3e04A5711C8F126cA95E8) | `0xca244a40FEd494075195b9632c75377ccFB7C8ff` | Compliance Orchestration |
 | **AssetRegistry** | [`0x4717bED7008bc5aF62b3b91a29aaa24Bab034038`](https://polygonscan.com/address/0x4717bED7008bc5aF62b3b91a29aaa24Bab034038) | `0xBe125EFCBCeB60EC5Bf38e00158999E8Eb359347` | RWA Asset Management |
@@ -107,12 +133,38 @@ sequenceDiagram
 - **Total Gas Cost**: ~2.5 MATIC
 - **Verification Status**: All contracts verified on Polygonscan ✅
 
+## Contract Variants Comparison
+
+| Feature | Core | Extended | Enterprise |
+|---------|------|----------|------------|
+| **Contract Size** | <24KB ✅ | >24KB ❌ | >24KB ❌ |
+| **Deployment Target** | Ethereum Mainnet | L2/Sidechain | L2/Sidechain |
+| **ERC-3643 Compliance** | ✅ | ✅ | ✅ |
+| **Asset Tokenization** | ✅ | ✅ | ✅ |
+| **Basic Dividends** | ✅ | ✅ | ✅ |
+| **Identity Integration** | ✅ | ✅ | ✅ |
+| **Compliance Modules** | ✅ | ✅ | ✅ |
+| **Advanced Dividends** | ❌ | ✅ | ✅ |
+| **Asset Lifecycle Mgmt** | Basic | ✅ | ✅ |
+| **Revenue Streams** | ❌ | ✅ | ✅ |
+| **Detailed Events** | Basic | ✅ | ✅ |
+| **Regulatory Reporting** | ❌ | ❌ | ✅ |
+| **Compliance Monitoring** | ❌ | ❌ | ✅ |
+| **Audit Trails** | ❌ | ❌ | ✅ |
+| **Current Deployment** | ❌ | ❌ | ✅ Polygon |
+
+### Choosing the Right Contract
+
+- **Use Core**: When deploying to Ethereum mainnet or gas costs are a primary concern
+- **Use Extended**: When you need full RWA features but handle reporting separately
+- **Use Enterprise**: For institutional deployments requiring integrated compliance (recommended)
+
 ## Contract Details
 
-### 1. Token Contract (ERC-3643 Security Token)
+### 1. FinatradesRWA_Enterprise Contract (ERC-3643 Security Token)
 **Address**: `0xED1c85A48EcD10654eD075F63F554cB3ac7faf6c`
 
-The main security token implementing the ERC-3643 standard with additional features:
+The enterprise-grade security token implementing the ERC-3643 standard with comprehensive RWA features and integrated regulatory reporting. This is the full-featured version deployed on Polygon, inheriting from FinatradesRWA_Extended:
 
 ```solidity
 // Key Functions
@@ -245,9 +297,12 @@ All contract ABIs are located in the `artifacts/contracts/` directory:
 
 ```
 artifacts/contracts/
-├── token/
-│   └── Token.sol/
-│       └── Token.json                    # Main token ABI
+├── FinatradesRWA_Core.sol/
+│   └── FinatradesRWA_Core.json           # Core token ABI
+├── FinatradesRWA_Extended.sol/
+│   └── FinatradesRWA_Extended.json       # Extended token ABI
+├── FinatradesRWA_Enterprise.sol/
+│   └── FinatradesRWA_Enterprise.json     # Enterprise token ABI (deployed)
 ├── registry/
 │   ├── IdentityRegistry.sol/
 │   │   └── IdentityRegistry.json         # Identity registry ABI
@@ -276,8 +331,8 @@ artifacts/contracts/
 ### Loading ABIs in JavaScript/TypeScript
 
 ```javascript
-// Example: Loading Token ABI
-const TokenABI = require('./artifacts/contracts/token/Token.sol/Token.json').abi;
+// Example: Loading FinatradesRWA_Enterprise ABI (currently deployed)
+const TokenABI = require('./artifacts/contracts/FinatradesRWA_Enterprise.sol/FinatradesRWA_Enterprise.json').abi;
 
 // Using with ethers.js
 const token = new ethers.Contract(
@@ -329,7 +384,7 @@ await identity.addClaim(
 
 ```javascript
 const token = await ethers.getContractAt(
-    "Token",
+    "FinatradesRWA_Enterprise",
     "0xED1c85A48EcD10654eD075F63F554cB3ac7faf6c"
 );
 
@@ -390,7 +445,7 @@ await assetRegistry.setBooleanAttribute(assetId, "leased", true);
 
 | Contract | Role | Permissions |
 |----------|------|-------------|
-| **Token** | OWNER_ROLE | All admin functions, role management |
+| **FinatradesRWA_Enterprise** | OWNER_ROLE | All admin functions, role management |
 | | AGENT_ROLE | Mint, burn, freeze, forced transfers |
 | | UPGRADER_ROLE | Authorize upgrades |
 | **IdentityRegistry** | OWNER_ROLE | All functions |
