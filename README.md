@@ -172,7 +172,7 @@ These contracts are **not deployed** as they are only needed when operating acro
 
 ## Deployed Contracts
 
-### Polygon Mainnet Deployment (December 2025)
+### Polygon Mainnet Deployment (August 2025)
 
 #### Main Contracts (Proxy Addresses)
 
@@ -404,7 +404,7 @@ npx hardhat coverage
 - **Status**: Ready for audit
 - **Security Tests**: Comprehensive test suite included
 - **Known Issues**: None
-- **Last Review**: December 2025
+- **Last Review**: August 2025
 
 ## Support
 
