@@ -1,0 +1,9 @@
+{
+  "RegulatoryIdentityRegistry": "0x80F662c1612AD62E8dc363Bd5b6e726C7e092E68",
+  "RegulatoryAuditTrail": "0x9492E1Da93749652a2840Ed9a3EC1d9f82BeeD44",
+  "CCIPRegulatoryBridge": "0x1c1Fa8154211b9FCd403519744A22Ff8898e64c6",
+  "CCIPIdentityReceiver": "0x04678Eb1298EecD88a6058d92276cD4c92815199",
+  "network": "polygon",
+  "deployer": "0xCE982AC6bc316Cf9d875652B84C7626B62a899eA",
+  "timestamp": "2025-08-03T00:09:35.634Z"
+}

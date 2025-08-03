@@ -118,23 +118,26 @@ contract FinatradesRWA_Enterprise is FinatradesRWA_Extended {
         uint256 amount,
         bytes32 assetId
     ) external virtual override returns (bool) {
-        // Execute transfer using external call to avoid super issues
-        bool success = this.transferWithAsset(to, amount, assetId);
+        require(assetTokenBalance[assetId][msg.sender] >= amount, "Insufficient asset tokens");
         
-        // Check if we're in a recursive call
-        if (success && msg.sender == address(this)) {
-            return true; // Avoid double reporting
-        }
+        // Regular ERC-3643 transfer (includes compliance checks)
+        bool success = transfer(to, amount);
         
-        // Record asset-specific transaction
-        if (success && address(regulatoryReporting) != address(0)) {
-            try regulatoryReporting.recordTransaction(
-                msg.sender,
-                to,
-                amount,
-                _bytes32ToString(assetId),
-                true
-            ) {} catch {}
+        if (success) {
+            // Update asset balances
+            assetTokenBalance[assetId][msg.sender] -= amount;
+            assetTokenBalance[assetId][to] += amount;
+            
+            // Record asset-specific transaction
+            if (address(regulatoryReporting) != address(0)) {
+                try regulatoryReporting.recordTransaction(
+                    msg.sender,
+                    to,
+                    amount,
+                    _bytes32ToString(assetId),
+                    true
+                ) {} catch {}
+            }
         }
         
         return success;
