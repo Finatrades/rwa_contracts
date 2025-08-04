@@ -189,6 +189,7 @@ These contracts are **not deployed** as they are only needed when operating acro
 | Contract | Proxy Address | Implementation | Purpose |
 |----------|---------------|----------------|---------|
 | **ClaimTopicsRegistry** | [`0xb97E45F808369C0629667B1eCD67d7cB31755110`](https://polygonscan.com/address/0xb97E45F808369C0629667B1eCD67d7cB31755110) | [`0x769015E394fD7AeDff895eEb1C12a88038e2B843`](https://polygonscan.com/address/0x769015E394fD7AeDff895eEb1C12a88038e2B843) | Identity Claim Topics |
+| **IdentityFactory** | [`0x3B44eb575E2971E967Ef979199c14Db795ba4156`](https://polygonscan.com/address/0x3B44eb575E2971E967Ef979199c14Db795ba4156) | [`0xEf68334bC08DD2E0bB2748e1B942cDf8287e0905`](https://polygonscan.com/address/0xEf68334bC08DD2E0bB2748e1B942cDf8287e0905) | Factory for deploying Identity contracts |
 | **CountryRestrictModule** | [`0x843299F60C3D07562e23bF3e7C5481edEC9c8DD9`](https://polygonscan.com/address/0x843299F60C3D07562e23bF3e7C5481edEC9c8DD9) | [`0x3Df52370727F84B4f7384bF1cbEB253F01Bbf82a`](https://polygonscan.com/address/0x3Df52370727F84B4f7384bF1cbEB253F01Bbf82a) | Geographic Restrictions |
 | **MaxBalanceModule** | [`0x00145e3a2897a1110632562EC469B2434841C009`](https://polygonscan.com/address/0x00145e3a2897a1110632562EC469B2434841C009) | [`0xa60820B239f3423ed08D61D9bF937AB45F0C5C3B`](https://polygonscan.com/address/0xa60820B239f3423ed08D61D9bF937AB45F0C5C3B) | Balance Limits |
 | **TransferLimitModule** | [`0xB45a0eB5c79aEFD7185f246CA9a2397AaF3Ea5Ae`](https://polygonscan.com/address/0xB45a0eB5c79aEFD7185f246CA9a2397AaF3Ea5Ae) | [`0x59e1aC8be18b4CD7792Fc0bAF4dC279D8a4aa2BB`](https://polygonscan.com/address/0x59e1aC8be18b4CD7792Fc0bAF4dC279D8a4aa2BB) | Transfer Limits |
@@ -197,7 +198,7 @@ These contracts are **not deployed** as they are only needed when operating acro
 ### Deployment Information
 - **Network**: Polygon Mainnet (Chain ID: 137)
 - **Deployer**: `0xCE982AC6bc316Cf9d875652B84C7626B62a899eA`
-- **Deployment Date**: December 3, 2025
+- **Deployment Date**: December 3, 2025 (Main contracts), August 4, 2025 (IdentityFactory)
 - **Token Name**: Finatrades RWA Token
 - **Token Symbol**: FRWA
 - **Token Decimals**: 18
@@ -310,6 +311,23 @@ getHolderList(uint256 offset, uint256 limit) returns (address[])
 generateComplianceReport() returns (bytes)
 ```
 
+### 7. IdentityFactory
+
+Factory contract for deploying ERC-734/735 compliant Identity contracts.
+
+**Key Functions**:
+```solidity
+deployIdentity(address _user, uint16 _country) // Deploy and register identity
+deployIdentityWithClaim(address _user, uint16 _country, uint256 _claimTopic, bytes _claimData) // Deploy with initial claim
+getIdentity(address _user) returns (address) // Get user's identity contract
+isFactoryIdentity(address _identity) returns (bool) // Verify factory deployment
+```
+
+**Access Control Roles**:
+- `DEFAULT_ADMIN_ROLE`: Full administrative control
+- `IDENTITY_DEPLOYER_ROLE`: Can deploy identity contracts
+- `UPGRADER_ROLE`: Can upgrade the factory contract
+
 ## Security Features
 
 ### Access Control
@@ -334,19 +352,21 @@ generateComplianceReport() returns (bytes)
 
 ### 1. Setting Up Identity (KYC/AML)
 
-```javascript
-// Deploy identity contract for investor
-const Identity = await ethers.getContractFactory("Identity");
-const identity = await Identity.deploy(investorAddress, true);
+#### Option A: Using IdentityFactory (Recommended)
 
-// Register in IdentityRegistry
-await identityRegistry.registerIdentity(
+```javascript
+// Deploy identity using factory (automatic registration)
+const tx = await identityFactory.deployIdentity(
     investorAddress,
-    identity.address,
     840 // USA country code
 );
+const receipt = await tx.wait();
 
-// Add KYC claim
+// Get the deployed identity address
+const identityAddress = await identityFactory.getIdentity(investorAddress);
+
+// Add KYC claim to the identity
+const identity = await ethers.getContractAt("Identity", identityAddress);
 await identity.addClaim(
     7, // KYC claim topic
     1, // Scheme
@@ -354,6 +374,21 @@ await identity.addClaim(
     signature,
     data,
     uri
+);
+```
+
+#### Option B: Manual Deployment
+
+```javascript
+// Deploy identity contract for investor
+const Identity = await ethers.getContractFactory("Identity");
+const identity = await Identity.deploy(investorAddress, false);
+
+// Register in IdentityRegistry
+await identityRegistry.registerIdentity(
+    investorAddress,
+    identity.address,
+    840 // USA country code
 );
 ```
 
@@ -377,6 +412,88 @@ await assetRegistry.registerAsset(
     "ipfs://QmAssetMetadata",
     custodianAddress
 );
+```
+
+## Deployment Guide
+
+### Prerequisites
+
+1. Funded deployer wallet with MATIC on Polygon
+2. Environment variables configured in `.env`:
+   ```env
+   PRIVATE_KEY=your_deployer_private_key
+   POLYGONSCAN_API_KEY=your_polygonscan_api_key
+   POLYGON_RPC_URL=https://polygon-rpc.com
+   ```
+
+### Deploying IdentityFactory
+
+1. **Deploy the contract**:
+   ```bash
+   npx hardhat run scripts/deploy-identity-factory.js --network polygon
+   ```
+
+2. **Grant roles to backend wallet**:
+   ```javascript
+   const factory = await ethers.getContractAt("IdentityFactory", FACTORY_ADDRESS);
+   const role = await factory.IDENTITY_DEPLOYER_ROLE();
+   await factory.grantRole(role, "0xYourBackendWallet");
+   ```
+
+3. **Update environment configuration**:
+   ```env
+   NEXT_PUBLIC_IDENTITY_FACTORY_ADDRESS=0x3B44eb575E2971E967Ef979199c14Db795ba4156
+   ```
+
+### Backend Integration
+
+Update your KYC approval flow to use IdentityFactory:
+
+```javascript
+import { deployIdentityForUser } from '@/lib/identity-factory';
+
+// During KYC approval
+if (!hasIdentity) {
+  const { identityAddress, txHash } = await deployIdentityForUser(
+    user.walletAddress,
+    countryCode,
+    factoryAddress,
+    wallet
+  );
+  
+  // Register the deployed identity
+  await identityRegistry.registerIdentity(
+    user.walletAddress,
+    identityAddress, // Proper Identity contract
+    countryCode
+  );
+}
+```
+
+### Gas Costs
+
+- IdentityFactory deployment: ~3M gas
+- Per user identity deployment: ~2.5M gas
+- Total cost per user: ~$5-10 on Polygon
+
+### JavaScript Library
+
+The `identity-factory.js` library provides helper functions for web application integration:
+
+```javascript
+// Deploy identity for a user
+const { identityAddress, txHash } = await deployIdentityForUser(
+  userAddress,
+  countryCode,
+  factoryAddress,
+  signer
+);
+
+// Check if user has an identity
+const hasIdentity = await checkUserIdentity(userAddress, factoryAddress, provider);
+
+// Get user's identity address
+const identityAddress = await getUserIdentity(userAddress, factoryAddress, provider);
 ```
 
 ## Testing
