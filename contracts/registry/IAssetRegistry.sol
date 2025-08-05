@@ -74,4 +74,8 @@ interface IAssetRegistry {
     function totalAssets() external view returns (uint256);
     function totalValueLocked() external view returns (uint256);
     function authorizedTokenContracts(address) external view returns (bool);
+    function assets(bytes32) external view returns (UniversalAssetLib.Asset memory);
+    
+    // Token authorization
+    function authorizeTokenContract(address tokenContract, bool authorized) external;
 }

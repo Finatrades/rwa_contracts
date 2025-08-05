@@ -140,6 +140,16 @@
       "address": "0x3B44eb575E2971E967Ef979199c14Db795ba4156",
       "txHash": "0x241b0592c5ee9622b7471663fa9205704c3a32f946304549efeda6823419c777",
       "kind": "uups"
+    },
+    {
+      "address": "0x00125BF225666cF5eF747896f2100170E9B84833",
+      "txHash": "0xa88648bf3c50d857c632fce96eda89252bee8bd5269e5ea57bc26154f40ef543",
+      "kind": "uups"
+    },
+    {
+      "address": "0x5aC1EB4BE5D56D0d0b37ac21E3A2362d028F7A70",
+      "txHash": "0x835ec21be3f167706e9da8b93b1b47b16af8d3428f0ece0e05df4259d8b8a541",
+      "kind": "uups"
     }
   ],
   "impls": {
@@ -2528,6 +2538,307 @@
               }
             ],
             "numberOfBytes": "64"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          },
+          "t_uint8": {
+            "label": "uint8",
+            "numberOfBytes": "1"
+          }
+        },
+        "namespaces": {}
+      }
+    },
+    "60ed1ac55c77baac33a58cdd09f982be815d5f2e160fda21a6d72858b8f8da57": {
+      "address": "0x4E989F963B10cF417E16C58447E725fb34F6b09f",
+      "txHash": "0x4a888d101e8c0fa794a920765a035efb9e81b9e207b131cdb3bd7125ca6a833b",
+      "layout": {
+        "solcVersion": "0.8.19",
+        "storage": [
+          {
+            "label": "_initialized",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_uint8",
+            "contract": "Initializable",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:63",
+            "retypedFrom": "bool"
+          },
+          {
+            "label": "_initializing",
+            "offset": 1,
+            "slot": "0",
+            "type": "t_bool",
+            "contract": "Initializable",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:68"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_array(t_uint256)50_storage",
+            "contract": "ContextUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol:40"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "51",
+            "type": "t_array(t_uint256)50_storage",
+            "contract": "ERC165Upgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/utils/introspection/ERC165Upgradeable.sol:41"
+          },
+          {
+            "label": "_roles",
+            "offset": 0,
+            "slot": "101",
+            "type": "t_mapping(t_bytes32,t_struct(RoleData)23_storage)",
+            "contract": "AccessControlUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol:57"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "102",
+            "type": "t_array(t_uint256)49_storage",
+            "contract": "AccessControlUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol:260"
+          },
+          {
+            "label": "_paused",
+            "offset": 0,
+            "slot": "151",
+            "type": "t_bool",
+            "contract": "PausableUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol:29"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "152",
+            "type": "t_array(t_uint256)49_storage",
+            "contract": "PausableUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol:116"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "201",
+            "type": "t_array(t_uint256)50_storage",
+            "contract": "ERC1967UpgradeUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/ERC1967/ERC1967UpgradeUpgradeable.sol:169"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "251",
+            "type": "t_array(t_uint256)50_storage",
+            "contract": "UUPSUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol:111"
+          },
+          {
+            "label": "deployedTokens",
+            "offset": 0,
+            "slot": "301",
+            "type": "t_mapping(t_address,t_struct(TokenDeployment)3953_storage)",
+            "contract": "TokenFactoryOptimized",
+            "src": "contracts/factory/TokenFactoryOptimized.sol:46"
+          },
+          {
+            "label": "assetToToken",
+            "offset": 0,
+            "slot": "302",
+            "type": "t_mapping(t_bytes32,t_address)",
+            "contract": "TokenFactoryOptimized",
+            "src": "contracts/factory/TokenFactoryOptimized.sol:47"
+          },
+          {
+            "label": "deployerTokens",
+            "offset": 0,
+            "slot": "303",
+            "type": "t_mapping(t_address,t_array(t_address)dyn_storage)",
+            "contract": "TokenFactoryOptimized",
+            "src": "contracts/factory/TokenFactoryOptimized.sol:48"
+          },
+          {
+            "label": "allTokens",
+            "offset": 0,
+            "slot": "304",
+            "type": "t_array(t_address)dyn_storage",
+            "contract": "TokenFactoryOptimized",
+            "src": "contracts/factory/TokenFactoryOptimized.sol:49"
+          },
+          {
+            "label": "erc20Implementation",
+            "offset": 0,
+            "slot": "305",
+            "type": "t_address",
+            "contract": "TokenFactoryOptimized",
+            "src": "contracts/factory/TokenFactoryOptimized.sol:52"
+          },
+          {
+            "label": "erc721Implementation",
+            "offset": 0,
+            "slot": "306",
+            "type": "t_address",
+            "contract": "TokenFactoryOptimized",
+            "src": "contracts/factory/TokenFactoryOptimized.sol:53"
+          },
+          {
+            "label": "identityRegistry",
+            "offset": 0,
+            "slot": "307",
+            "type": "t_address",
+            "contract": "TokenFactoryOptimized",
+            "src": "contracts/factory/TokenFactoryOptimized.sol:56"
+          },
+          {
+            "label": "modularCompliance",
+            "offset": 0,
+            "slot": "308",
+            "type": "t_address",
+            "contract": "TokenFactoryOptimized",
+            "src": "contracts/factory/TokenFactoryOptimized.sol:57"
+          },
+          {
+            "label": "assetRegistry",
+            "offset": 0,
+            "slot": "309",
+            "type": "t_address",
+            "contract": "TokenFactoryOptimized",
+            "src": "contracts/factory/TokenFactoryOptimized.sol:58"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_array(t_address)dyn_storage": {
+            "label": "address[]",
+            "numberOfBytes": "32"
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]",
+            "numberOfBytes": "1568"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]",
+            "numberOfBytes": "1600"
+          },
+          "t_bool": {
+            "label": "bool",
+            "numberOfBytes": "1"
+          },
+          "t_bytes32": {
+            "label": "bytes32",
+            "numberOfBytes": "32"
+          },
+          "t_enum(TokenType)3935": {
+            "label": "enum TokenFactoryOptimized.TokenType",
+            "members": [
+              "ERC20",
+              "ERC721"
+            ],
+            "numberOfBytes": "1"
+          },
+          "t_mapping(t_address,t_array(t_address)dyn_storage)": {
+            "label": "mapping(address => address[])",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_bool)": {
+            "label": "mapping(address => bool)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_struct(TokenDeployment)3953_storage)": {
+            "label": "mapping(address => struct TokenFactoryOptimized.TokenDeployment)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_bytes32,t_address)": {
+            "label": "mapping(bytes32 => address)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_bytes32,t_struct(RoleData)23_storage)": {
+            "label": "mapping(bytes32 => struct AccessControlUpgradeable.RoleData)",
+            "numberOfBytes": "32"
+          },
+          "t_string_storage": {
+            "label": "string",
+            "numberOfBytes": "32"
+          },
+          "t_struct(RoleData)23_storage": {
+            "label": "struct AccessControlUpgradeable.RoleData",
+            "members": [
+              {
+                "label": "members",
+                "type": "t_mapping(t_address,t_bool)",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "adminRole",
+                "type": "t_bytes32",
+                "offset": 0,
+                "slot": "1"
+              }
+            ],
+            "numberOfBytes": "64"
+          },
+          "t_struct(TokenDeployment)3953_storage": {
+            "label": "struct TokenFactoryOptimized.TokenDeployment",
+            "members": [
+              {
+                "label": "tokenAddress",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "tokenType",
+                "type": "t_enum(TokenType)3935",
+                "offset": 20,
+                "slot": "0"
+              },
+              {
+                "label": "name",
+                "type": "t_string_storage",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "symbol",
+                "type": "t_string_storage",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "deployer",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "3"
+              },
+              {
+                "label": "deployedAt",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "4"
+              },
+              {
+                "label": "assetId",
+                "type": "t_bytes32",
+                "offset": 0,
+                "slot": "5"
+              },
+              {
+                "label": "isActive",
+                "type": "t_bool",
+                "offset": 0,
+                "slot": "6"
+              }
+            ],
+            "numberOfBytes": "224"
           },
           "t_uint256": {
             "label": "uint256",

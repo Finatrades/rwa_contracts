@@ -17,6 +17,8 @@
 ### Key Features
 - **ERC-3643 (T-REX) Compliant**: Full implementation of the Token for Regulated EXchanges standard
 - **Multi-Asset Support**: Universal registry supporting any type of RWA
+- **Flexible Token Standards**: Choose between ERC-20 (fractional) or ERC-721 (NFT) for each asset
+- **Token Factory**: Automated deployment of compliant tokens with user-selected standard
 - **Modular Compliance**: Pluggable compliance modules for different jurisdictions
 - **Identity Management**: On-chain KYC/AML with privacy preservation
 - **Regulatory Reporting**: Automated compliance reporting and monitoring
@@ -148,6 +150,35 @@ graph TB
     style Asset fill:#9C27B0,color:#fff
 ```
 
+## Token Selection Guide
+
+### When to Use ERC-20 (Fractional Tokens)
+
+Choose ERC-20 tokens for assets that benefit from:
+- **Fractional Ownership**: Multiple investors can own portions of the asset
+- **High Liquidity**: Easier to trade on secondary markets
+- **Lower Entry Barriers**: Investors can buy small amounts
+- **Standardized Pricing**: All tokens have the same value
+
+**Best for**: Real estate properties, commodity pools, investment funds, revenue-sharing agreements
+
+### When to Use ERC-721 (NFTs)
+
+Choose ERC-721 tokens for assets that are:
+- **Unique and Indivisible**: Each asset is one-of-a-kind
+- **Collector Items**: Value derived from uniqueness
+- **Whole Ownership**: Single owner per asset
+- **Distinct Metadata**: Each token has unique properties
+
+**Best for**: Individual properties, art pieces, luxury items, unique collectibles, certificates
+
+### Hybrid Approach
+
+Some projects may use both:
+- ERC-721 for the property deed (ownership)
+- ERC-20 for revenue sharing tokens
+- Multiple asset types in one ecosystem
+
 ## Regulatory Compliance Approach
 
 ### Single-Chain Compliance (Current Deployment)
@@ -195,10 +226,20 @@ These contracts are **not deployed** as they are only needed when operating acro
 | **TransferLimitModule** | [`0xB45a0eB5c79aEFD7185f246CA9a2397AaF3Ea5Ae`](https://polygonscan.com/address/0xB45a0eB5c79aEFD7185f246CA9a2397AaF3Ea5Ae) | [`0x59e1aC8be18b4CD7792Fc0bAF4dC279D8a4aa2BB`](https://polygonscan.com/address/0x59e1aC8be18b4CD7792Fc0bAF4dC279D8a4aa2BB) | Transfer Limits |
 | **FinatradesTimelock** | [`0x64897d31E7A90CF5166d85B039340122D2e1B72e`](https://polygonscan.com/address/0x64897d31E7A90CF5166d85B039340122D2e1B72e) | N/A (Non-upgradeable) | 48-hour Governance Delay |
 
+#### New: Finatrades Token Factory System (August 2025)
+
+| Contract | Proxy Address | Implementation | Purpose |
+|----------|---------------|----------------|---------|
+| **FinatradesTokenFactory** | [`0x5aC1EB4BE5D56D0d0b37ac21E3A2362d028F7A70`](https://polygonscan.com/address/0x5aC1EB4BE5D56D0d0b37ac21E3A2362d028F7A70) | [`0x4E989F963B10cF417E16C58447E725fb34F6b09f`](https://polygonscan.com/address/0x4E989F963B10cF417E16C58447E725fb34F6b09f) | Factory for deploying Finatrades ERC-20 or ERC-721 tokens |
+
+**Token Implementations (Finatrades Branded):**
+- **Finatrades Token (ERC-20)**: [`0x5900027BbdA1A833C9f93F3bcE76b9E4eCf8D341`](https://polygonscan.com/address/0x5900027BbdA1A833C9f93F3bcE76b9E4eCf8D341)
+- **FinatradesNFT (ERC-721)**: [`0xF23688617C09B89d13F625a0670D8Ba64a2c065A`](https://polygonscan.com/address/0xF23688617C09B89d13F625a0670D8Ba64a2c065A)
+
 ### Deployment Information
 - **Network**: Polygon Mainnet (Chain ID: 137)
 - **Deployer**: `0xCE982AC6bc316Cf9d875652B84C7626B62a899eA`
-- **Deployment Date**: December 3, 2025 (Main contracts), August 4, 2025 (IdentityFactory)
+- **Deployment Date**: December 3, 2025 (Main contracts), August 4, 2025 (IdentityFactory, TokenFactory)
 - **Token Name**: Finatrades RWA Token
 - **Token Symbol**: FRWA
 - **Token Decimals**: 18
@@ -328,6 +369,47 @@ isFactoryIdentity(address _identity) returns (bool) // Verify factory deployment
 - `IDENTITY_DEPLOYER_ROLE`: Can deploy identity contracts
 - `UPGRADER_ROLE`: Can upgrade the factory contract
 
+### 8. FinatradesTokenFactory
+
+Factory contract for deploying Finatrades-branded ERC-20 or ERC-721 compliant security tokens based on user preference.
+
+**Key Functions**:
+```solidity
+deployToken(TokenType _tokenType, string _name, string _symbol, bytes32 _assetId, address _tokenAdmin) // Deploy token
+updateImplementation(TokenType _tokenType, address _newImplementation) // Update implementation
+deactivateToken(address _tokenAddress) // Emergency deactivation
+getTokenForAsset(bytes32 _assetId) returns (address) // Get token for asset
+```
+
+**Token Types**:
+- `TokenType.ERC20 (0)`: Fractional ownership tokens using Finatrades Token contract
+- `TokenType.ERC721 (1)`: Non-fungible tokens using FinatradesNFT contract
+
+**Access Control Roles**:
+- `FACTORY_ADMIN_ROLE`: Administrative control over factory
+- `TOKEN_DEPLOYER_ROLE`: Can deploy new tokens
+- `UPGRADER_ROLE`: Can upgrade the factory contract
+
+### 9. FinatradesNFT
+
+Finatrades-branded ERC-721 compliant security token for non-fungible real-world assets with full compliance integration.
+
+**Key Functions**:
+```solidity
+mint(address _to, uint256 _value, bytes32 _assetId, string _uri) returns (uint256) // Mint NFT
+burn(uint256 _tokenId) // Burn NFT
+tokenValue(uint256 _tokenId) returns (uint256) // Get token value
+tokenAssetId(uint256 _tokenId) returns (bytes32) // Get asset ID
+forcedTransfer(address _from, address _to, uint256 _tokenId) // Forced transfer
+```
+
+**Features**:
+- Full ERC-3643 compliance checks on transfers
+- Value tracking for each NFT
+- Asset ID association
+- Metadata URI support
+- Batch minting capabilities
+
 ## Security Features
 
 ### Access Control
@@ -411,6 +493,72 @@ await assetRegistry.registerAsset(
     ethers.parseEther("1000000"), // $1M valuation
     "ipfs://QmAssetMetadata",
     custodianAddress
+);
+```
+
+### 4. Token Deployment via Factory
+
+The TokenFactory allows users to choose between ERC-20 and ERC-721 tokens for their assets:
+
+#### Deploy ERC-20 Token (Fractional Ownership)
+
+```javascript
+// For assets that need fractional ownership
+const FACTORY_ADDRESS = "0x5aC1EB4BE5D56D0d0b37ac21E3A2362d028F7A70";
+const tokenFactory = await ethers.getContractAt("FinatradesTokenFactory", FACTORY_ADDRESS);
+
+// Deploy ERC-20 token
+const tx = await tokenFactory.deployToken(
+    0, // TokenType.ERC20
+    "Manhattan Office Building Token",
+    "MOB",
+    assetId,
+    adminAddress
+);
+
+const receipt = await tx.wait();
+const tokenAddress = receipt.events.find(e => e.event === "TokenDeployed").args.tokenAddress;
+
+// Mint tokens to investors
+const token = await ethers.getContractAt("Token", tokenAddress);
+await token.mint(investorAddress, ethers.parseEther("1000"));
+```
+
+#### Deploy ERC-721 Token (Unique Assets)
+
+```javascript
+// For unique, non-divisible assets
+const artAssetId = ethers.id("ART-PICASSO-001");
+
+// Register art asset first
+await assetRegistry.registerAsset(
+    artAssetId,
+    "Picasso Blue Period Original",
+    2, // ART_COLLECTIBLES
+    ethers.parseEther("50000000"), // $50M
+    "ipfs://QmArtMetadata",
+    custodianAddress
+);
+
+// Deploy ERC-721 token
+const tx = await tokenFactory.deployToken(
+    1, // TokenType.ERC721
+    "Picasso Collection",
+    "PBC",
+    artAssetId,
+    adminAddress
+);
+
+const receipt = await tx.wait();
+const nftAddress = receipt.events.find(e => e.event === "TokenDeployed").args.tokenAddress;
+
+// Mint NFT
+const nftToken = await ethers.getContractAt("FinatradesNFT", nftAddress);
+await nftToken.mint(
+    collectorAddress,
+    ethers.parseEther("50000000"), // Value
+    artAssetId,
+    "ipfs://QmNFTMetadata"
 );
 ```
 
@@ -529,11 +677,28 @@ npx hardhat coverage
 - **Security Contact**: security@finatrades.com
 - **Website**: https://finatrades.com
 
+## Recent Updates
+
+### Finatrades Token Factory Deployment (August 4, 2025)
+
+The Finatrades Token Factory system has been successfully deployed on Polygon Mainnet with proper branding, enabling users to choose between ERC-20 and ERC-721 tokens for their RWA tokenization needs:
+
+- **FinatradesTokenFactory**: [`0x5aC1EB4BE5D56D0d0b37ac21E3A2362d028F7A70`](https://polygonscan.com/address/0x5aC1EB4BE5D56D0d0b37ac21E3A2362d028F7A70)
+- **Finatrades Token (ERC-20)**: [`0x5900027BbdA1A833C9f93F3bcE76b9E4eCf8D341`](https://polygonscan.com/address/0x5900027BbdA1A833C9f93F3bcE76b9E4eCf8D341)
+- **FinatradesNFT (ERC-721)**: [`0xF23688617C09B89d13F625a0670D8Ba64a2c065A`](https://polygonscan.com/address/0xF23688617C09B89d13F625a0670D8Ba64a2c065A)
+
+All contracts now carry the Finatrades brand name and are fully verified on Polygonscan.
+
+Users can deploy compliant security tokens for their assets by calling:
+```javascript
+await tokenFactory.deployToken(tokenType, name, symbol, assetId, adminAddress);
+```
+
 ## License
 
 MIT License - Copyright (c) 2025 Finatrades
 
 ---
 
-**Version**: 2.0.0  
-**Last Updated**: December 3, 2025
+**Version**: 2.1.0  
+**Last Updated**: August 4, 2025
