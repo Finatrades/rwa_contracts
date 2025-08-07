@@ -11,12 +11,12 @@ import "../registry/IAssetRegistry.sol";
 import "../libraries/UniversalAssetLib.sol";
 
 /**
- * @title FinatradesTokenFactory
- * @notice Factory contract for deploying Finatrades ERC-20 or ERC-721 compliant security tokens
- * @dev Uses external implementation addresses for gas efficiency
+ * @title ImprovedTokenFactory
+ * @notice Factory contract that properly handles ERC20 and ERC721 deployments with dedicated compliance modules
+ * @dev Each ERC20 token gets its own ModularCompliance instance to avoid conflicts
  * @custom:security-contact security@finatrades.com
  */
-contract FinatradesTokenFactory is 
+contract ImprovedTokenFactory is 
     Initializable,
     AccessControlUpgradeable,
     PausableUpgradeable,
@@ -33,6 +33,7 @@ contract FinatradesTokenFactory is
     // Struct to store token deployment info
     struct TokenDeployment {
         address tokenAddress;
+        address complianceAddress;  // Each token has its own compliance
         TokenType tokenType;
         string name;
         string symbol;
@@ -45,7 +46,7 @@ contract FinatradesTokenFactory is
     // State variables
     mapping(address => TokenDeployment) public deployedTokens;
     mapping(bytes32 => address) public assetToToken;
-    mapping(address => address) public tokenToCompliance;  // Maps each token to its dedicated compliance
+    mapping(address => address) public tokenToCompliance;  // Maps token to its compliance module
     mapping(address => address[]) public deployerTokens;
     address[] public allTokens;
     
@@ -61,15 +62,21 @@ contract FinatradesTokenFactory is
     // Events
     event TokenDeployed(
         address indexed tokenAddress,
+        address indexed complianceAddress,
         TokenType indexed tokenType,
         string name,
         string symbol,
-        address indexed deployer,
+        address deployer,
         bytes32 assetId
     );
     
     event TokenImplementationUpdated(
         TokenType tokenType,
+        address oldImplementation,
+        address newImplementation
+    );
+    
+    event ComplianceImplementationUpdated(
         address oldImplementation,
         address newImplementation
     );
@@ -107,13 +114,14 @@ contract FinatradesTokenFactory is
     }
     
     /**
-     * @notice Deploy a new token (ERC-20 or ERC-721) for an asset
+     * @notice Deploy a new token with its own compliance module
      * @param _tokenType Type of token to deploy (ERC20 or ERC721)
      * @param _name Token name
      * @param _symbol Token symbol
      * @param _assetId Asset ID from AssetRegistry
      * @param _tokenAdmin Admin address for the new token
      * @return tokenAddress Address of the deployed token
+     * @return complianceAddress Address of the token's compliance module
      */
     function deployToken(
         TokenType _tokenType,
@@ -121,7 +129,7 @@ contract FinatradesTokenFactory is
         string memory _symbol,
         bytes32 _assetId,
         address _tokenAdmin
-    ) external onlyRole(TOKEN_DEPLOYER_ROLE) whenNotPaused returns (address tokenAddress) {
+    ) external onlyRole(TOKEN_DEPLOYER_ROLE) whenNotPaused returns (address tokenAddress, address complianceAddress) {
         require(bytes(_name).length > 0, "Name cannot be empty");
         require(bytes(_symbol).length > 0, "Symbol cannot be empty");
         require(_assetId != bytes32(0), "Invalid asset ID");
@@ -130,7 +138,6 @@ contract FinatradesTokenFactory is
         
         // Verify asset exists in registry
         IAssetRegistry registry = IAssetRegistry(assetRegistry);
-        // Try to get the asset - will revert if it doesn't exist
         try registry.getAsset(_assetId) returns (UniversalAssetLib.Asset memory) {
             // Asset exists, continue
         } catch {
@@ -138,27 +145,24 @@ contract FinatradesTokenFactory is
         }
         
         // Deploy a dedicated compliance module for this token
-        address dedicatedCompliance = _deployCompliance(_tokenAdmin);
+        complianceAddress = _deployCompliance(_tokenAdmin);
         
-        // Deploy the appropriate token type with its dedicated compliance
+        // Deploy the appropriate token type
         if (_tokenType == TokenType.ERC20) {
             require(erc20Implementation != address(0), "ERC20 implementation not set");
-            tokenAddress = _deployERC20TokenWithCompliance(_name, _symbol, _tokenAdmin, dedicatedCompliance);
+            tokenAddress = _deployERC20Token(_name, _symbol, _tokenAdmin, complianceAddress);
         } else {
             require(erc721Implementation != address(0), "ERC721 implementation not set");
-            tokenAddress = _deployERC721TokenWithCompliance(_name, _symbol, _tokenAdmin, dedicatedCompliance);
+            tokenAddress = _deployERC721Token(_name, _symbol, _tokenAdmin, complianceAddress);
         }
         
-        // Note: bindToken is called after token is deployed
-        // The factory has OWNER_ROLE on the compliance since it initialized it
-        ICompliance(dedicatedCompliance).bindToken(tokenAddress);
-        
-        // Store token to compliance mapping
-        tokenToCompliance[tokenAddress] = dedicatedCompliance;
+        // Bind token to its compliance module
+        ICompliance(complianceAddress).bindToken(tokenAddress);
         
         // Store deployment info
         deployedTokens[tokenAddress] = TokenDeployment({
             tokenAddress: tokenAddress,
+            complianceAddress: complianceAddress,
             tokenType: _tokenType,
             name: _name,
             symbol: _symbol,
@@ -169,15 +173,16 @@ contract FinatradesTokenFactory is
         });
         
         assetToToken[_assetId] = tokenAddress;
+        tokenToCompliance[tokenAddress] = complianceAddress;
         deployerTokens[msg.sender].push(tokenAddress);
         allTokens.push(tokenAddress);
         
         // Authorize token in AssetRegistry
         registry.authorizeTokenContract(tokenAddress, true);
         
-        emit TokenDeployed(tokenAddress, _tokenType, _name, _symbol, msg.sender, _assetId);
+        emit TokenDeployed(tokenAddress, complianceAddress, _tokenType, _name, _symbol, msg.sender, _assetId);
         
-        return tokenAddress;
+        return (tokenAddress, complianceAddress);
     }
     
     /**
@@ -187,38 +192,20 @@ contract FinatradesTokenFactory is
         require(complianceImplementation != address(0), "Compliance implementation not set");
         
         // Encode initialization data for ModularCompliance
-        // Initialize with factory as admin so it can bind the token
         bytes memory initData = abi.encodeWithSignature(
             "initialize(address)",
-            address(this)  // Factory needs to be admin to bind token
+            _admin
         );
         
         ERC1967Proxy proxy = new ERC1967Proxy(complianceImplementation, initData);
-        
-        // Grant the actual admin the OWNER_ROLE and DEFAULT_ADMIN_ROLE after deployment
-        // Need to use the AccessControl interface since ICompliance doesn't have grantRole
-        bytes32 OWNER_ROLE = keccak256("OWNER_ROLE");
-        bytes32 DEFAULT_ADMIN_ROLE = 0x00;
-        
-        // Grant OWNER_ROLE to admin
-        (bool success1,) = address(proxy).call(
-            abi.encodeWithSignature("grantRole(bytes32,address)", OWNER_ROLE, _admin)
-        );
-        require(success1, "Failed to grant OWNER_ROLE to admin");
-        
-        // Grant DEFAULT_ADMIN_ROLE to admin as well
-        (bool success2,) = address(proxy).call(
-            abi.encodeWithSignature("grantRole(bytes32,address)", DEFAULT_ADMIN_ROLE, _admin)
-        );
-        require(success2, "Failed to grant DEFAULT_ADMIN_ROLE to admin");
         
         return address(proxy);
     }
     
     /**
-     * @notice Deploy ERC-20 token with dedicated compliance
+     * @notice Deploy ERC-20 token using proxy pattern
      */
-    function _deployERC20TokenWithCompliance(
+    function _deployERC20Token(
         string memory _name,
         string memory _symbol,
         address _tokenAdmin,
@@ -241,9 +228,9 @@ contract FinatradesTokenFactory is
     }
     
     /**
-     * @notice Deploy ERC-721 token with dedicated compliance
+     * @notice Deploy ERC-721 token using proxy pattern
      */
-    function _deployERC721TokenWithCompliance(
+    function _deployERC721Token(
         string memory _name,
         string memory _symbol,
         address _tokenAdmin,
@@ -286,6 +273,21 @@ contract FinatradesTokenFactory is
         }
         
         emit TokenImplementationUpdated(_tokenType, oldImplementation, _newImplementation);
+    }
+    
+    /**
+     * @notice Update compliance implementation for future deployments
+     * @param _newImplementation New compliance implementation address
+     */
+    function updateComplianceImplementation(
+        address _newImplementation
+    ) external onlyRole(FACTORY_ADMIN_ROLE) {
+        require(_newImplementation != address(0), "Invalid implementation");
+        
+        address oldImplementation = complianceImplementation;
+        complianceImplementation = _newImplementation;
+        
+        emit ComplianceImplementationUpdated(oldImplementation, _newImplementation);
     }
     
     /**
@@ -338,6 +340,15 @@ contract FinatradesTokenFactory is
      */
     function getTokenForAsset(bytes32 _assetId) external view returns (address) {
         return assetToToken[_assetId];
+    }
+    
+    /**
+     * @notice Get compliance address for a token
+     * @param _tokenAddress Token address
+     * @return Compliance module address
+     */
+    function getComplianceForToken(address _tokenAddress) external view returns (address) {
+        return tokenToCompliance[_tokenAddress];
     }
     
     /**
@@ -399,26 +410,6 @@ contract FinatradesTokenFactory is
         
         identityRegistry = _identityRegistry;
         assetRegistry = _assetRegistry;
-    }
-    
-    /**
-     * @notice Update compliance implementation for future deployments
-     * @param _newImplementation New compliance implementation address
-     */
-    function updateComplianceImplementation(
-        address _newImplementation
-    ) external onlyRole(FACTORY_ADMIN_ROLE) {
-        require(_newImplementation != address(0), "Invalid implementation");
-        complianceImplementation = _newImplementation;
-    }
-    
-    /**
-     * @notice Get compliance address for a token
-     * @param _tokenAddress Token address
-     * @return Compliance module address
-     */
-    function getComplianceForToken(address _tokenAddress) external view returns (address) {
-        return tokenToCompliance[_tokenAddress];
     }
     
     // Emergency functions

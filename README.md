@@ -230,7 +230,7 @@ These contracts are **not deployed** as they are only needed when operating acro
 
 | Contract | Proxy Address | Implementation | Purpose |
 |----------|---------------|----------------|---------|
-| **FinatradesTokenFactory** | [`0x5aC1EB4BE5D56D0d0b37ac21E3A2362d028F7A70`](https://polygonscan.com/address/0x5aC1EB4BE5D56D0d0b37ac21E3A2362d028F7A70) | [`0x4E989F963B10cF417E16C58447E725fb34F6b09f`](https://polygonscan.com/address/0x4E989F963B10cF417E16C58447E725fb34F6b09f) | Factory for deploying Finatrades ERC-20 or ERC-721 tokens |
+| **FinatradesTokenFactory** | [`0x64d06d0474aeb8f0512916da559705ec93bb1f9e`](https://polygonscan.com/address/0x64d06d0474aeb8f0512916da559705ec93bb1f9e) | [`0x71b74b80eae7061733bd57e8e2d8b96213e79e87`](https://polygonscan.com/address/0x71b74b80eae7061733bd57e8e2d8b96213e79e87) | Factory for deploying Finatrades ERC-20 or ERC-721 tokens with dedicated compliance |
 
 **Token Implementations (Finatrades Branded):**
 - **Finatrades Token (ERC-20)**: [`0x5900027BbdA1A833C9f93F3bcE76b9E4eCf8D341`](https://polygonscan.com/address/0x5900027BbdA1A833C9f93F3bcE76b9E4eCf8D341)
@@ -679,11 +679,19 @@ npx hardhat coverage
 
 ## Recent Updates
 
-### Finatrades Token Factory Deployment (August 4, 2025)
+### Finatrades Token Factory Updates (August 6, 2025)
+
+#### Factory Implementation Upgrade
+The FinatradesTokenFactory has been upgraded to fix compliance binding issues:
+- **Previous Issue**: Factory couldn't bind tokens to compliance modules due to missing OWNER_ROLE
+- **Solution**: Factory now initializes compliance with itself as owner, then grants roles to admin
+- **New Implementation**: [`0x71b74b80eae7061733bd57e8e2d8b96213e79e87`](https://polygonscan.com/address/0x71b74b80eae7061733bd57e8e2d8b96213e79e87)
+
+#### Initial Deployment (August 4, 2025)
 
 The Finatrades Token Factory system has been successfully deployed on Polygon Mainnet with proper branding, enabling users to choose between ERC-20 and ERC-721 tokens for their RWA tokenization needs:
 
-- **FinatradesTokenFactory**: [`0x5aC1EB4BE5D56D0d0b37ac21E3A2362d028F7A70`](https://polygonscan.com/address/0x5aC1EB4BE5D56D0d0b37ac21E3A2362d028F7A70)
+- **FinatradesTokenFactory**: [`0x64d06d0474aeb8f0512916da559705ec93bb1f9e`](https://polygonscan.com/address/0x64d06d0474aeb8f0512916da559705ec93bb1f9e)
 - **Finatrades Token (ERC-20)**: [`0x5900027BbdA1A833C9f93F3bcE76b9E4eCf8D341`](https://polygonscan.com/address/0x5900027BbdA1A833C9f93F3bcE76b9E4eCf8D341)
 - **FinatradesNFT (ERC-721)**: [`0xF23688617C09B89d13F625a0670D8Ba64a2c065A`](https://polygonscan.com/address/0xF23688617C09B89d13F625a0670D8Ba64a2c065A)
 
@@ -700,5 +708,5 @@ MIT License - Copyright (c) 2025 Finatrades
 
 ---
 
-**Version**: 2.1.0  
-**Last Updated**: August 4, 2025
+**Version**: 2.1.1  
+**Last Updated**: August 6, 2025

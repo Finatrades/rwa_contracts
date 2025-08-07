@@ -1,7 +1,7 @@
 const hre = require("hardhat");
 
 async function main() {
-  console.log("=== Granting Token Deployer Role ===\n");
+  console.log("=== Granting TOKEN_DEPLOYER_ROLE ===\n");
 
   // Contract addresses
   const FACTORY_ADDRESS = "0x5aC1EB4BE5D56D0d0b37ac21E3A2362d028F7A70";
