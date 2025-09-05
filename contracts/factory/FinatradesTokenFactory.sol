@@ -6,6 +6,7 @@ import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
+import "@openzeppelin/contracts/access/IAccessControl.sol";
 import "../compliance/ICompliance.sol";
 import "../registry/IAssetRegistry.sol";
 import "../libraries/UniversalAssetLib.sol";
@@ -28,7 +29,7 @@ contract FinatradesTokenFactory is
     bytes32 public constant UPGRADER_ROLE = keccak256("UPGRADER_ROLE");
     
     // Token types
-    enum TokenType { ERC20, ERC721 }
+    enum TokenType { ERC20, ERC721, ERC1155 }
     
     // Struct to store token deployment info
     struct TokenDeployment {
@@ -52,6 +53,7 @@ contract FinatradesTokenFactory is
     // Implementation addresses (set by admin)
     address public erc20Implementation;
     address public erc721Implementation;
+    address public erc1155Implementation;
     address public complianceImplementation;  // Implementation for ModularCompliance
     
     // Registry addresses
@@ -104,11 +106,12 @@ contract FinatradesTokenFactory is
         assetRegistry = _assetRegistry;
         erc20Implementation = _erc20Implementation;
         erc721Implementation = _erc721Implementation;
+        // erc1155Implementation will be set separately via setERC1155Implementation
     }
     
     /**
-     * @notice Deploy a new token (ERC-20 or ERC-721) for an asset
-     * @param _tokenType Type of token to deploy (ERC20 or ERC721)
+     * @notice Deploy a new token (ERC-20, ERC-721, or ERC-1155) for an asset
+     * @param _tokenType Type of token to deploy (ERC20, ERC721, or ERC1155)
      * @param _name Token name
      * @param _symbol Token symbol
      * @param _assetId Asset ID from AssetRegistry
@@ -130,12 +133,9 @@ contract FinatradesTokenFactory is
         
         // Verify asset exists in registry
         IAssetRegistry registry = IAssetRegistry(assetRegistry);
-        // Try to get the asset - will revert if it doesn't exist
-        try registry.getAsset(_assetId) returns (UniversalAssetLib.Asset memory) {
-            // Asset exists, continue
-        } catch {
-            revert("Asset does not exist");
-        }
+        // Get the asset - will revert with actual error if it doesn't exist
+        UniversalAssetLib.Asset memory asset = registry.getAsset(_assetId);
+        require(asset.status != UniversalAssetLib.AssetStatus.NONE, "Asset not found or inactive");
         
         // Deploy a dedicated compliance module for this token
         address dedicatedCompliance = _deployCompliance(_tokenAdmin);
@@ -144,14 +144,32 @@ contract FinatradesTokenFactory is
         if (_tokenType == TokenType.ERC20) {
             require(erc20Implementation != address(0), "ERC20 implementation not set");
             tokenAddress = _deployERC20TokenWithCompliance(_name, _symbol, _tokenAdmin, dedicatedCompliance);
-        } else {
+        } else if (_tokenType == TokenType.ERC721) {
             require(erc721Implementation != address(0), "ERC721 implementation not set");
             tokenAddress = _deployERC721TokenWithCompliance(_name, _symbol, _tokenAdmin, dedicatedCompliance);
+        } else if (_tokenType == TokenType.ERC1155) {
+            require(erc1155Implementation != address(0), "ERC1155 implementation not set");
+            tokenAddress = _deployERC1155TokenWithCompliance(_name, _assetId, _tokenAdmin, dedicatedCompliance);
+        } else {
+            revert("Invalid token type");
         }
         
         // Note: bindToken is called after token is deployed
-        // The factory has OWNER_ROLE on the compliance since it initialized it
+        // Factory has admin rights on compliance so this should work
         ICompliance(dedicatedCompliance).bindToken(tokenAddress);
+        
+        // Now transfer ownership of compliance to the token admin
+        // Use IAccessControl to grant roles and renounce factory's role
+        IAccessControl compliance = IAccessControl(dedicatedCompliance);
+        bytes32 OWNER_ROLE = keccak256("OWNER_ROLE");
+        bytes32 DEFAULT_ADMIN_ROLE = 0x00;
+        
+        // Grant roles to token admin
+        compliance.grantRole(OWNER_ROLE, _tokenAdmin);
+        compliance.grantRole(DEFAULT_ADMIN_ROLE, _tokenAdmin);
+        
+        // Renounce factory's roles (optional - admin can do this later)
+        // compliance.renounceRole(DEFAULT_ADMIN_ROLE, address(this));
         
         // Store token to compliance mapping
         tokenToCompliance[tokenAddress] = dedicatedCompliance;
@@ -187,7 +205,8 @@ contract FinatradesTokenFactory is
         require(complianceImplementation != address(0), "Compliance implementation not set");
         
         // Encode initialization data for ModularCompliance
-        // Initialize with factory as admin so it can bind the token
+        // Initialize with factory as admin so we can bind the token
+        // The initialize function already grants DEFAULT_ADMIN_ROLE, OWNER_ROLE, and UPGRADER_ROLE
         bytes memory initData = abi.encodeWithSignature(
             "initialize(address)",
             address(this)  // Factory needs to be admin to bind token
@@ -195,22 +214,8 @@ contract FinatradesTokenFactory is
         
         ERC1967Proxy proxy = new ERC1967Proxy(complianceImplementation, initData);
         
-        // Grant the actual admin the OWNER_ROLE and DEFAULT_ADMIN_ROLE after deployment
-        // Need to use the AccessControl interface since ICompliance doesn't have grantRole
-        bytes32 OWNER_ROLE = keccak256("OWNER_ROLE");
-        bytes32 DEFAULT_ADMIN_ROLE = 0x00;
-        
-        // Grant OWNER_ROLE to admin
-        (bool success1,) = address(proxy).call(
-            abi.encodeWithSignature("grantRole(bytes32,address)", OWNER_ROLE, _admin)
-        );
-        require(success1, "Failed to grant OWNER_ROLE to admin");
-        
-        // Grant DEFAULT_ADMIN_ROLE to admin as well
-        (bool success2,) = address(proxy).call(
-            abi.encodeWithSignature("grantRole(bytes32,address)", DEFAULT_ADMIN_ROLE, _admin)
-        );
-        require(success2, "Failed to grant DEFAULT_ADMIN_ROLE to admin");
+        // No need to grant OWNER_ROLE - initialize already did that
+        // We'll transfer ownership after binding the token
         
         return address(proxy);
     }
@@ -265,6 +270,35 @@ contract FinatradesTokenFactory is
     }
     
     /**
+     * @notice Deploy ERC-1155 multi-token with dedicated compliance
+     */
+    function _deployERC1155TokenWithCompliance(
+        string memory _name,
+        bytes32 _assetId,
+        address _tokenAdmin,
+        address _complianceAddress
+    ) private returns (address) {
+        // Construct URI based on asset ID for metadata
+        string memory uri = string(abi.encodePacked(
+            "https://api.finatrades.com/metadata/",
+            _toHexString(_assetId)
+        ));
+        
+        // Use correct initialization signature for FinatradesMultiToken
+        bytes memory initData = abi.encodeWithSignature(
+            "initialize(address,string,address,address)",
+            _tokenAdmin,
+            uri,
+            identityRegistry,
+            _complianceAddress
+        );
+        
+        ERC1967Proxy proxy = new ERC1967Proxy(erc1155Implementation, initData);
+        
+        return address(proxy);
+    }
+    
+    /**
      * @notice Update implementation contract for future deployments
      * @param _tokenType Type of token implementation to update
      * @param _newImplementation New implementation address
@@ -280,9 +314,14 @@ contract FinatradesTokenFactory is
         if (_tokenType == TokenType.ERC20) {
             oldImplementation = erc20Implementation;
             erc20Implementation = _newImplementation;
-        } else {
+        } else if (_tokenType == TokenType.ERC721) {
             oldImplementation = erc721Implementation;
             erc721Implementation = _newImplementation;
+        } else if (_tokenType == TokenType.ERC1155) {
+            oldImplementation = erc1155Implementation;
+            erc1155Implementation = _newImplementation;
+        } else {
+            revert("Invalid token type");
         }
         
         emit TokenImplementationUpdated(_tokenType, oldImplementation, _newImplementation);
@@ -413,6 +452,19 @@ contract FinatradesTokenFactory is
     }
     
     /**
+     * @notice Set ERC1155 implementation address
+     * @param _implementation ERC1155 implementation address
+     */
+    function setERC1155Implementation(
+        address _implementation
+    ) external onlyRole(FACTORY_ADMIN_ROLE) {
+        require(_implementation != address(0), "Invalid implementation");
+        address oldImplementation = erc1155Implementation;
+        erc1155Implementation = _implementation;
+        emit TokenImplementationUpdated(TokenType.ERC1155, oldImplementation, _implementation);
+    }
+    
+    /**
      * @notice Get compliance address for a token
      * @param _tokenAddress Token address
      * @return Compliance module address
@@ -432,4 +484,21 @@ contract FinatradesTokenFactory is
     
     // UUPS upgrade authorization
     function _authorizeUpgrade(address newImplementation) internal override onlyRole(UPGRADER_ROLE) {}
+    
+    /**
+     * @notice Convert bytes32 to hex string
+     * @param data The bytes32 data to convert
+     * @return The hex string representation
+     */
+    function _toHexString(bytes32 data) private pure returns (string memory) {
+        bytes memory alphabet = "0123456789abcdef";
+        bytes memory str = new bytes(64);
+        
+        for (uint256 i = 0; i < 32; i++) {
+            str[i * 2] = alphabet[uint8(data[i] >> 4)];
+            str[1 + i * 2] = alphabet[uint8(data[i] & 0x0f)];
+        }
+        
+        return string(str);
+    }
 }

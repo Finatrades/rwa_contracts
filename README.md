@@ -3,8 +3,11 @@
 ## Table of Contents
 - [Executive Summary](#executive-summary)
 - [Architecture Overview](#architecture-overview)
+- [Token Selection Guide](#token-selection-guide)
 - [Deployed Contracts](#deployed-contracts)
 - [Contract Details](#contract-details)
+- [KYC and Country Restrictions](#kyc-and-country-restrictions)
+- [Token Control Mechanisms](#token-control-mechanisms)
 - [Security Features](#security-features)
 - [Integration Guide](#integration-guide)
 - [Testing](#testing)
@@ -17,7 +20,7 @@
 ### Key Features
 - **ERC-3643 (T-REX) Compliant**: Full implementation of the Token for Regulated EXchanges standard
 - **Multi-Asset Support**: Universal registry supporting any type of RWA
-- **Flexible Token Standards**: Choose between ERC-20 (fractional) or ERC-721 (NFT) for each asset
+- **Flexible Token Standards**: Choose between ERC-20 (fractional), ERC-721 (NFT), or ERC-1155 (multi-ownership-token) for each asset
 - **Token Factory**: Automated deployment of compliant tokens with user-selected standard
 - **Modular Compliance**: Pluggable compliance modules for different jurisdictions
 - **Identity Management**: On-chain KYC/AML with privacy preservation
@@ -38,15 +41,21 @@
 ### System Architecture
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                           Finatrades RWA Ecosystem                           │
+│                     Finatrades RWA Ecosystem (Deployed)                      │
 └─────────────────────────────────────────────────────────────────────────────┘
                                         │
         ┌───────────────────────────────┴────────────────────────────────┐
         │                                                                 │
 ┌───────▼──────────┐                                          ┌──────────▼─────────┐
-│  Security Token  │                                          │   Asset Registry   │
-│  (ERC-3643)      │◄─────────────────────────────────────────┤   (Universal RWA)  │
-└──────┬───────────┘                                          └────────────────────┘
+│  Token Factory   │                                          │   Asset Registry   │
+│  (ERC-20/721/    │──────────────────────────────────────────┤   (Universal RWA)  │
+│   1155 Deployer) │                                          └────────────────────┘
+└──────┬───────────┘                                                     
+       │ Deploys                                                          
+┌──────▼──────────┐                                                      
+│  Security Token │                                                      
+│  (ERC-3643)     │                                                      
+└──────┬──────────┘                                                      
        │                                                                 
        ├──────────────┬────────────────┬─────────────────┬──────────────┐
        │              │                │                 │              │
@@ -172,12 +181,78 @@ Choose ERC-721 tokens for assets that are:
 
 **Best for**: Individual properties, art pieces, luxury items, unique collectibles, certificates
 
+### When to Use ERC-1155 (Multi-Token)
+
+Choose ERC-1155 tokens for assets that require:
+- **Batch Management**: Multiple token types in one contract
+- **Semi-Fungible Assets**: Combining fungible and non-fungible properties
+- **Gas Efficiency**: Reduced transaction costs for batch operations
+- **Flexible Supply**: Different supply amounts for different token IDs
+
+**Best for**: Commodity batches, production runs, limited editions, tiered memberships, fractional NFTs
+
 ### Hybrid Approach
 
-Some projects may use both:
+Some projects may use multiple standards:
 - ERC-721 for the property deed (ownership)
 - ERC-20 for revenue sharing tokens
+- ERC-1155 for batch management of similar assets
 - Multiple asset types in one ecosystem
+
+## Deploying ERC-1155 Tokens
+
+### Using the Factory (Recommended)
+
+The ERC-1155 implementation is now fully integrated with the FinatradesTokenFactory. To deploy an ERC-1155 token:
+
+```javascript
+// 1. First, register your asset in the AssetRegistry
+const assetId = ethers.keccak256(ethers.toUtf8Bytes("GOLD-BATCH-2025"));
+await assetRegistry.registerAsset(
+    assetId,
+    "Gold Batch Q1 2025",
+    1, // AssetCategory.COMMODITY
+    ethers.parseEther("1000000"), // valuationAmount
+    "ipfs://metadata",
+    custodianAddress
+);
+
+// 2. Deploy the ERC-1155 token via factory
+const factory = await ethers.getContractAt(
+    "FinatradesTokenFactory",
+    "0xb0d5D0a17F8f6B31ED2D4ae11BD487872653FB08"
+);
+
+const tx = await factory.deployToken(
+    2, // TokenType.ERC1155
+    "Gold Batch Q1 2025",
+    "GOLD2025", // Symbol (required by factory but not used by ERC-1155)
+    assetId,
+    adminAddress
+);
+
+const receipt = await tx.wait();
+// Extract token address from event
+
+// 3. Create batches and mint tokens
+const multiToken = await ethers.getContractAt("FinatradesMultiTokenOptimized", tokenAddress);
+
+await multiToken.createBatch(
+    assetId,
+    "Gold Batch Q1 2025",
+    "100 ounces of gold, 99.9% purity",
+    100000, // Total supply
+    ethers.parseEther("50"), // Price per token
+    "ipfs://batch-metadata"
+);
+```
+
+### Key Features
+- **Batch Creation**: Create multiple token types within one contract
+- **Flexible Minting**: Mint to single or multiple recipients
+- **Compliance Integration**: Full ERC-3643 compliance per batch
+- **Gas Efficient**: Optimized for batch operations
+- **Metadata Support**: Each batch can have unique metadata
 
 ## Regulatory Compliance Approach
 
@@ -203,43 +278,46 @@ These contracts are **not deployed** as they are only needed when operating acro
 
 ## Deployed Contracts
 
-### Polygon Mainnet Deployment (August 2025)
+### Polygon Mainnet Deployment (August 27, 2025)
 
 #### Main Contracts (Proxy Addresses)
 
 | Contract | Proxy Address | Implementation | Purpose |
 |----------|---------------|----------------|---------|
-| **Token** | [`0x3496D447c773905B5CA3B29DA1ca7c42510596B3`](https://polygonscan.com/address/0x3496D447c773905B5CA3B29DA1ca7c42510596B3) | [`0x2BD4EA5353dAC5d7e17FC149d267Fc2174A89594`](https://polygonscan.com/address/0x2BD4EA5353dAC5d7e17FC149d267Fc2174A89594) | ERC-3643 Security Token |
-| **IdentityRegistry** | [`0x4483de4257Ca47E02E7862452d6E08690c6827fd`](https://polygonscan.com/address/0x4483de4257Ca47E02E7862452d6E08690c6827fd) | [`0x2e469Ff181dbBfFB86957dADBdfe948DCe2f843b`](https://polygonscan.com/address/0x2e469Ff181dbBfFB86957dADBdfe948DCe2f843b) | KYC/Identity Management |
-| **ModularCompliance** | [`0xC42a1E382ef2C36d8D4bEE654fB877e2E9b1Eb8a`](https://polygonscan.com/address/0xC42a1E382ef2C36d8D4bEE654fB877e2E9b1Eb8a) | [`0x2F52feE580053e641009fEBaf22484CA495C0938`](https://polygonscan.com/address/0x2F52feE580053e641009fEBaf22484CA495C0938) | Compliance Orchestration |
-| **AssetRegistry** | [`0x04aA90cAaAc423a5a1A858EE863482cAFd0fEb5F`](https://polygonscan.com/address/0x04aA90cAaAc423a5a1A858EE863482cAFd0fEb5F) | [`0xef98aC203A72796Bd9f764dDc4D78c4568094252`](https://polygonscan.com/address/0xef98aC203A72796Bd9f764dDc4D78c4568094252) | RWA Asset Management |
-| **RegulatoryReportingOptimized** | [`0x4337BA0627DA5649736447Ce49Ed65315dD74E47`](https://polygonscan.com/address/0x4337BA0627DA5649736447Ce49Ed65315dD74E47) | [`0x15B00D40A30A8FA0BB432fA780595fD820620255`](https://polygonscan.com/address/0x15B00D40A30A8FA0BB432fA780595fD820620255) | Compliance Reporting |
+| **Token** | [`0xC07eE2C6D3C64a8562fd0D51BA1A4824dCD091ad`](https://polygonscan.com/address/0xC07eE2C6D3C64a8562fd0D51BA1A4824dCD091ad) | [`0x7559E7dABdD819dE1f6c35ae103980388D663969`](https://polygonscan.com/address/0x7559E7dABdD819dE1f6c35ae103980388D663969) | ERC-3643 Security Token |
+| **IdentityRegistry** | [`0xe357e6065E17cD3D913E203D9E0A5ae2F7b258c6`](https://polygonscan.com/address/0xe357e6065E17cD3D913E203D9E0A5ae2F7b258c6) | [`0xf964DC2A2a597d95BFC227587652317ac4C21A27`](https://polygonscan.com/address/0xf964DC2A2a597d95BFC227587652317ac4C21A27) | KYC/Identity Management |
+| **ModularCompliance** | [`0xb8a9b1F5Cf2D4F73502ACc08588125afBb7bCb4D`](https://polygonscan.com/address/0xb8a9b1F5Cf2D4F73502ACc08588125afBb7bCb4D) | [`0x425F899C1BE679505e10652E74d47cAdC8d826d1`](https://polygonscan.com/address/0x425F899C1BE679505e10652E74d47cAdC8d826d1) | Compliance Orchestration |
+| **AssetRegistry** | [`0x83413e2C668c9249331Bc88D370655bb44527867`](https://polygonscan.com/address/0x83413e2C668c9249331Bc88D370655bb44527867) | [`0x144709AA5B52559ABe42Cb050B743B5C7c21Caa9`](https://polygonscan.com/address/0x144709AA5B52559ABe42Cb050B743B5C7c21Caa9) | RWA Asset Management |
+| **RegulatoryReportingOptimized** | [`0xB7e2ca25f30662eABb0896053Ea5C76924983e62`](https://polygonscan.com/address/0xB7e2ca25f30662eABb0896053Ea5C76924983e62) | [`0x70E68dD058412B6c0554af11b8EfBA77661DDE1b`](https://polygonscan.com/address/0x70E68dD058412B6c0554af11b8EfBA77661DDE1b) | Compliance Reporting |
 
 #### Supporting Contracts
 
 | Contract | Proxy Address | Implementation | Purpose |
 |----------|---------------|----------------|---------|
-| **ClaimTopicsRegistry** | [`0xb97E45F808369C0629667B1eCD67d7cB31755110`](https://polygonscan.com/address/0xb97E45F808369C0629667B1eCD67d7cB31755110) | [`0x769015E394fD7AeDff895eEb1C12a88038e2B843`](https://polygonscan.com/address/0x769015E394fD7AeDff895eEb1C12a88038e2B843) | Identity Claim Topics |
-| **IdentityFactory** | [`0x3B44eb575E2971E967Ef979199c14Db795ba4156`](https://polygonscan.com/address/0x3B44eb575E2971E967Ef979199c14Db795ba4156) | [`0xEf68334bC08DD2E0bB2748e1B942cDf8287e0905`](https://polygonscan.com/address/0xEf68334bC08DD2E0bB2748e1B942cDf8287e0905) | Factory for deploying Identity contracts |
-| **CountryRestrictModule** | [`0x843299F60C3D07562e23bF3e7C5481edEC9c8DD9`](https://polygonscan.com/address/0x843299F60C3D07562e23bF3e7C5481edEC9c8DD9) | [`0x3Df52370727F84B4f7384bF1cbEB253F01Bbf82a`](https://polygonscan.com/address/0x3Df52370727F84B4f7384bF1cbEB253F01Bbf82a) | Geographic Restrictions |
-| **MaxBalanceModule** | [`0x00145e3a2897a1110632562EC469B2434841C009`](https://polygonscan.com/address/0x00145e3a2897a1110632562EC469B2434841C009) | [`0xa60820B239f3423ed08D61D9bF937AB45F0C5C3B`](https://polygonscan.com/address/0xa60820B239f3423ed08D61D9bF937AB45F0C5C3B) | Balance Limits |
-| **TransferLimitModule** | [`0xB45a0eB5c79aEFD7185f246CA9a2397AaF3Ea5Ae`](https://polygonscan.com/address/0xB45a0eB5c79aEFD7185f246CA9a2397AaF3Ea5Ae) | [`0x59e1aC8be18b4CD7792Fc0bAF4dC279D8a4aa2BB`](https://polygonscan.com/address/0x59e1aC8be18b4CD7792Fc0bAF4dC279D8a4aa2BB) | Transfer Limits |
-| **FinatradesTimelock** | [`0x64897d31E7A90CF5166d85B039340122D2e1B72e`](https://polygonscan.com/address/0x64897d31E7A90CF5166d85B039340122D2e1B72e) | N/A (Non-upgradeable) | 48-hour Governance Delay |
+| **ClaimTopicsRegistry** | [`0x930835a2d966245ad6b69DA875C20FD3B74ADb3f`](https://polygonscan.com/address/0x930835a2d966245ad6b69DA875C20FD3B74ADb3f) | [`0xAF0f25ac810a13486354586E5ADF8FB4a83d8ADc`](https://polygonscan.com/address/0xAF0f25ac810a13486354586E5ADF8FB4a83d8ADc) | Identity Claim Topics |
+| **IdentityFactory** | [`0xEc4321AC175D9bA6dE16337A49895fC9f2FEb85B`](https://polygonscan.com/address/0xEc4321AC175D9bA6dE16337A49895fC9f2FEb85B) | [`0x5f4489815c2C8438039deaCa9717cE33b8388528`](https://polygonscan.com/address/0x5f4489815c2C8438039deaCa9717cE33b8388528) | Factory for deploying Identity contracts |
+| **CountryRestrictModule** | [`0x6F332F2dBc812b081B956d66ce0c5bFdad764e10`](https://polygonscan.com/address/0x6F332F2dBc812b081B956d66ce0c5bFdad764e10) | [`0x4A1d0a835B39Ac243141d0544285277af696e553`](https://polygonscan.com/address/0x4A1d0a835B39Ac243141d0544285277af696e553) | Geographic Restrictions ([ISO Country Codes](https://unstats.un.org/unsd/methodology/m49/)) |
+| **MaxBalanceModule** | [`0x17BaBff4A2BeCB2C2b6182d28AD8e5E1b1087DEd`](https://polygonscan.com/address/0x17BaBff4A2BeCB2C2b6182d28AD8e5E1b1087DEd) | [`0xF33c98eD21BEBAf57A63ab841aF534768e828eBC`](https://polygonscan.com/address/0xF33c98eD21BEBAf57A63ab841aF534768e828eBC) | Balance Limits |
+| **TransferLimitModule** | [`0x4b65BFd9301efc1084fA0757763538d4be1fDec3`](https://polygonscan.com/address/0x4b65BFd9301efc1084fA0757763538d4be1fDec3) | [`0x3aFAe6b42B23cb6566774232F5252520Da282B90`](https://polygonscan.com/address/0x3aFAe6b42B23cb6566774232F5252520Da282B90) | Transfer Limits |
+| **FinatradesTimelock** | [`0xD9917515cdF619bBB1d6921a65966E757a41080f`](https://polygonscan.com/address/0xD9917515cdF619bBB1d6921a65966E757a41080f) | N/A (Non-upgradeable) | 48-hour Governance Delay |
 
-#### New: Finatrades Token Factory System (August 2025)
+#### Token Factory System (Updated: August 29, 2025)
 
-| Contract | Proxy Address | Implementation | Purpose |
-|----------|---------------|----------------|---------|
-| **FinatradesTokenFactory** | [`0x64d06d0474aeb8f0512916da559705ec93bb1f9e`](https://polygonscan.com/address/0x64d06d0474aeb8f0512916da559705ec93bb1f9e) | [`0x71b74b80eae7061733bd57e8e2d8b96213e79e87`](https://polygonscan.com/address/0x71b74b80eae7061733bd57e8e2d8b96213e79e87) | Factory for deploying Finatrades ERC-20 or ERC-721 tokens with dedicated compliance |
+| Contract | Address | Type | Purpose |
+|----------|---------|------|---------|
+| **FinatradesTokenFactory** | [`0x41e5A8eaf1bc00DEA2ad953497043337C39B9b36`](https://polygonscan.com/address/0x41e5A8eaf1bc00DEA2ad953497043337C39B9b36) | Proxy | Factory for deploying ERC-20, ERC-721, and ERC-1155 tokens (Latest - August 29, 2025) |
+| **Factory Implementation** | [`0xA4376bC2A8eb152aaB901903059430832176925b`](https://polygonscan.com/address/0xA4376bC2A8eb152aaB901903059430832176925b) | Implementation | Latest implementation with improved error handling and ERC-1155 support (August 29, 2025) |
 
-**Token Implementations (Finatrades Branded):**
-- **Finatrades Token (ERC-20)**: [`0x5900027BbdA1A833C9f93F3bcE76b9E4eCf8D341`](https://polygonscan.com/address/0x5900027BbdA1A833C9f93F3bcE76b9E4eCf8D341)
-- **FinatradesNFT (ERC-721)**: [`0xF23688617C09B89d13F625a0670D8Ba64a2c065A`](https://polygonscan.com/address/0xF23688617C09B89d13F625a0670D8Ba64a2c065A)
+**Token Implementations (Ready for Deployment via Factory):**
+- **ERC-20 Implementation**: [`0x54F99B4D75C4d9B62595ca8230e675dd75636467`](https://polygonscan.com/address/0x54F99B4D75C4d9B62595ca8230e675dd75636467) - For fractional ownership tokens
+- **ERC-721 Implementation**: [`0x7DA038D58F4B80E8460dba41111cdA92Ac1aC772`](https://polygonscan.com/address/0x7DA038D58F4B80E8460dba41111cdA92Ac1aC772) - For unique asset NFTs
+- **ERC-1155 Implementation**: [`0xCD5612DD14fF5d38c2853fA0eE801d5A3b669337`](https://polygonscan.com/address/0xCD5612DD14fF5d38c2853fA0eE801d5A3b669337) - For multi-token batch assets ✅
+- **Compliance Implementation**: [`0xB3E1C557c7F21AB5b3391D3D5161762ab11FCabB`](https://polygonscan.com/address/0xB3E1C557c7F21AB5b3391D3D5161762ab11FCabB) - ModularCompliance for token compliance (Updated Dec 27, 2024)
 
 ### Deployment Information
 - **Network**: Polygon Mainnet (Chain ID: 137)
 - **Deployer**: `0xCE982AC6bc316Cf9d875652B84C7626B62a899eA`
-- **Deployment Date**: December 3, 2025 (Main contracts), August 4, 2025 (IdentityFactory, TokenFactory)
+- **Deployment Date**: August 27, 2025 (Complete fresh deployment)
 - **Token Name**: Finatrades RWA Token
 - **Token Symbol**: FRWA
 - **Token Decimals**: 18
@@ -269,17 +347,26 @@ recoveryAddress(address lostWallet, address newWallet) // Recover lost tokens
 
 ### 2. IdentityRegistry
 
-Manages on-chain identities and KYC verification.
+Manages on-chain identities and KYC verification with integrated country restrictions. Countries can be blocked from submitting KYC, preventing registration from restricted jurisdictions.
 
 **Key Functions**:
 ```solidity
-registerIdentity(address _userAddress, address _identity, uint16 _country)
+registerIdentity(address _userAddress, address _identity, uint16 _country) // Checks if country is blocked
 updateIdentity(address _userAddress, address _identity)
-updateCountry(address _userAddress, uint16 _country)
+updateCountry(address _userAddress, uint16 _country) // Checks if new country is blocked
 deleteIdentity(address _userAddress)
 isVerified(address _userAddress) returns (bool)
 batchRegisterIdentity(address[] _userAddresses, address[] _identities, uint16[] _countries)
+setCountryBlocked(uint16 _country, bool _blocked) // Block/unblock countries from KYC
+batchSetCountryRestrictions(uint16[] _countries, bool[] _blocked) // Batch country blocking
+isCountryBlocked(uint16 _country) returns (bool) // Check if country is blocked
 ```
+
+**Country Restriction Features**:
+- **Pre-KYC Blocking**: Countries can be blocked before KYC submission
+- **Registration Prevention**: Blocked countries cannot register identities
+- **Update Protection**: Users cannot update to blocked countries
+- **Batch Management**: Efficiently manage multiple country restrictions
 
 ### 3. ModularCompliance
 
@@ -384,6 +471,7 @@ getTokenForAsset(bytes32 _assetId) returns (address) // Get token for asset
 **Token Types**:
 - `TokenType.ERC20 (0)`: Fractional ownership tokens using Finatrades Token contract
 - `TokenType.ERC721 (1)`: Non-fungible tokens using FinatradesNFT contract
+- `TokenType.ERC1155 (2)`: Multi-token batches using FinatradesMultiTokenOptimized contract
 
 **Access Control Roles**:
 - `FACTORY_ADMIN_ROLE`: Administrative control over factory
@@ -397,18 +485,276 @@ Finatrades-branded ERC-721 compliant security token for non-fungible real-world 
 **Key Functions**:
 ```solidity
 mint(address _to, uint256 _value, bytes32 _assetId, string _uri) returns (uint256) // Mint NFT
-burn(uint256 _tokenId) // Burn NFT
-tokenValue(uint256 _tokenId) returns (uint256) // Get token value
-tokenAssetId(uint256 _tokenId) returns (bytes32) // Get asset ID
-forcedTransfer(address _from, address _to, uint256 _tokenId) // Forced transfer
 ```
 
-**Features**:
+### 10. FinatradesMultiTokenOptimized (ERC-1155)
+
+Optimized ERC-1155 compliant multi-token standard for managing batches of real-world assets with full compliance integration.
+
+**Key Functions**:
+```solidity
+createBatch(bytes32 _assetId, string _name, string _description, uint256 _totalSupply, uint256 _unitValue, string _metadataURI) // Create batch
+mintBatch(uint256 _tokenId, address _to, uint256 _amount) // Mint from batch
+mintBatchMultiple(uint256 _tokenId, address[] _recipients, uint256[] _amounts) // Batch mint to multiple
+burnBatch(uint256 _tokenId, address _from, uint256 _amount) // Burn tokens
+redeemTokens(uint256 _tokenId, uint256 _amount) // Redeem tokens
+forcedTransfer(uint256 _tokenId, address _from, address _to, uint256 _amount) // Compliance transfer
+freezeBatch(uint256 _tokenId, bool _freeze) // Freeze/unfreeze batch
+freezeAddress(address _account, bool _freeze) // Freeze/unfreeze account
+updateBatchMetadata(uint256 _tokenId, string _metadataURI) // Update metadata
+updateBatchValue(uint256 _tokenId, uint256 _newUnitValue) // Update value
+getOwnershipDistribution(uint256 _tokenId, uint256 _offset, uint256 _limit) // Get holders
+getTotalValue(address _holder) // Get total value for holder
+```
+
+**Access Control Roles**:
+- `ADMIN_ROLE`: Administrative control
+- `AGENT_ROLE`: Can mint, burn, freeze, and force transfers
+
+### 11. Token Features
 - Full ERC-3643 compliance checks on transfers
 - Value tracking for each NFT
 - Asset ID association
 - Metadata URI support
 - Batch minting capabilities
+
+## KYC and Country Restrictions
+
+### Integrated KYC Country Blocking
+
+The Finatrades platform implements **country restrictions at the KYC level**, preventing users from restricted jurisdictions from even registering their identity. This provides the first line of defense before any token operations.
+
+#### How It Works
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                 KYC COUNTRY RESTRICTION FLOW                 │
+├─────────────────────────────────────────────────────────────┤
+│  1. Admin blocks country (e.g., USA = 1)                    │
+│     └── identityRegistry.setCountryBlocked(1, true)         │
+│                                                              │
+│  2. User from USA attempts KYC                              │
+│     └── registerIdentity(user, identity, 1)                 │
+│         └── ❌ REJECTED: "Country is blocked from KYC"      │
+│                                                              │
+│  3. User cannot:                                             │
+│     └── Register identity                                   │
+│     └── Update to blocked country                           │
+│     └── Access any token operations                         │
+└─────────────────────────────────────────────────────────────┘
+```
+
+#### Country Code Examples
+
+| Country | Code | Usage |
+|---------|------|-------|
+| United States | 1 | `setCountryBlocked(1, true)` |
+| China | 86 | `setCountryBlocked(86, true)` |
+| Russia | 7 | `setCountryBlocked(7, true)` |
+| United Kingdom | 44 | `setCountryBlocked(44, false)` |
+| Germany | 49 | `setCountryBlocked(49, false)` |
+| Japan | 81 | `setCountryBlocked(81, false)` |
+
+#### Managing Country Restrictions
+
+**Block a Single Country:**
+```solidity
+// Block USA from KYC registration
+identityRegistry.setCountryBlocked(1, true);
+
+// Unblock UK for KYC registration
+identityRegistry.setCountryBlocked(44, false);
+```
+
+**Batch Block Multiple Countries:**
+```solidity
+// Block USA (1), China (86), and Russia (7)
+uint16[] memory countries = [1, 86, 7];
+bool[] memory blocked = [true, true, true];
+identityRegistry.batchSetCountryRestrictions(countries, blocked);
+```
+
+**Check if Country is Blocked:**
+```solidity
+bool isUSABlocked = identityRegistry.isCountryBlocked(1);
+```
+
+#### Two-Layer Protection System
+
+1. **KYC Layer (IdentityRegistry)** - *Prevents registration*
+   - Blocks countries from submitting KYC
+   - Prevents identity registration
+   - Stops country updates to blocked jurisdictions
+
+2. **Transfer Layer (CountryRestrictModule)** - *Controls transfers*
+   - Additional transfer restrictions between countries
+   - Can block specific country pairs
+   - Operates on already KYC'd users
+
+#### Common Use Cases
+
+**Regulatory Compliance:**
+```solidity
+// Block sanctioned countries
+identityRegistry.setCountryBlocked(NORTH_KOREA_CODE, true);
+identityRegistry.setCountryBlocked(IRAN_CODE, true);
+```
+
+**Phased Market Entry:**
+```solidity
+// Start with EU countries only
+// Block all non-EU countries initially
+uint16[] memory nonEUCountries = [...];
+bool[] memory allBlocked = [true, true, ...];
+identityRegistry.batchSetCountryRestrictions(nonEUCountries, allBlocked);
+
+// Later, open to specific markets
+identityRegistry.setCountryBlocked(JAPAN_CODE, false);
+identityRegistry.setCountryBlocked(SINGAPORE_CODE, false);
+```
+
+**Emergency Response:**
+```solidity
+// Quickly block a country due to regulatory changes
+identityRegistry.setCountryBlocked(problematicCountryCode, true);
+// All new KYC attempts from that country will be rejected immediately
+```
+
+### Access Control for Country Restrictions
+
+- **OWNER_ROLE**: Can set country blocks and restrictions
+- **AGENT_ROLE**: Can register identities (but cannot override country blocks)
+- **Users**: Cannot register if from blocked country
+
+## Token Control Mechanisms
+
+### Freeze & Pause Capabilities
+
+All Finatrades token contracts (ERC-20, ERC-721, and ERC-1155) include comprehensive control mechanisms that can be toggled on/off for regulatory compliance and emergency situations.
+
+#### ERC-20 Token Controls (FinatradesToken)
+
+| Control Type | Functions | Description | Required Role |
+|-------------|-----------|-------------|---------------|
+| **Global Pause** | `pause()` / `unpause()` | Stops ALL token operations (mint, burn, transfer) | `AGENT_ROLE` |
+| **Account Freeze** | `setAddressFrozen(address, bool)` | Freeze/unfreeze specific accounts completely | `AGENT_ROLE` |
+| **Partial Token Freeze** | `freezePartialTokens(address, uint256)` / `unfreezePartialTokens()` | Freeze specific amount of tokens for an address | `AGENT_ROLE` |
+| **Mint Control** | `mint(address, uint256)` | Controlled minting with compliance checks | `AGENT_ROLE` |
+| **Burn Control** | `burn(address, uint256)` | Controlled burning with compliance updates | `AGENT_ROLE` |
+| **Forced Transfer** | `forcedTransfer(address, address, uint256)` | Emergency transfer bypass for compliance | `AGENT_ROLE` |
+
+**Status Check Functions:**
+- `paused()` - Check if contract is paused
+- `isFrozen(address)` - Check if account is frozen
+- `getFrozenTokens(address)` - Check amount of frozen tokens
+
+#### ERC-721 Token Controls (FinatradesNFT)
+
+| Control Type | Functions | Description | Required Role |
+|-------------|-----------|-------------|---------------|
+| **Global Pause** | `pause()` / `unpause()` | Stops ALL NFT operations | `AGENT_ROLE` |
+| **Account Freeze** | `setAddressFrozen(address, bool)` | Freeze/unfreeze specific accounts | `AGENT_ROLE` |
+| **Individual NFT Freeze** | `freezeToken(uint256)` / `unfreezeToken(uint256)` | Freeze/unfreeze specific NFT tokens | `AGENT_ROLE` |
+| **Mint Control** | `mint(address, uint256, bytes32, string)` | Controlled NFT minting | `AGENT_ROLE` |
+| **Burn Control** | `burn(uint256)` | Controlled NFT burning | `AGENT_ROLE` |
+| **Forced Transfer** | `forcedTransfer(address, address, uint256)` | Emergency NFT transfer | `AGENT_ROLE` |
+
+**Status Check Functions:**
+- `paused()` - Check if contract is paused
+- `isFrozen(address)` - Check if account is frozen
+- `isTokenFrozen(uint256)` - Check if specific NFT is frozen
+
+#### ERC-1155 Token Controls (FinatradesMultiTokenOptimized)
+
+| Control Type | Functions | Description | Required Role |
+|-------------|-----------|-------------|---------------|
+| **Global Pause** | `pause()` / `unpause()` | Stops ALL multi-token operations | `AGENT_ROLE` |
+| **Account Freeze** | `freezeAddress(address, bool)` | Freeze/unfreeze specific accounts | `AGENT_ROLE` |
+| **Batch Freeze** | `freezeBatch(uint256, bool)` | Freeze/unfreeze entire token batches | `AGENT_ROLE` |
+| **Mint Control** | `mintBatch()` / `mintBatchMultiple()` | Controlled batch minting | `AGENT_ROLE` |
+| **Burn Control** | `burnBatch()` / `redeemTokens()` | Controlled batch burning | `AGENT_ROLE` |
+| **Forced Transfer** | `forcedTransfer(uint256, address, address, uint256)` | Emergency batch transfer | `AGENT_ROLE` |
+
+**Status Check Functions:**
+- `paused()` - Check if contract is paused
+- `isAddressFrozen(address)` / `isFrozen(address)` - Check if account is frozen
+- `isBatchFrozen(uint256)` - Check if token batch is frozen
+
+### Control Hierarchy
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    CONTROL HIERARCHY                         │
+├─────────────────────────────────────────────────────────────┤
+│  1. Global Pause (Highest Priority)                         │
+│     └── Stops ALL operations when activated                 │
+│                                                              │
+│  2. Account Freeze                                          │
+│     └── Blocks specific addresses from all operations       │
+│                                                              │
+│  3. Token/Batch Specific Freeze                             │
+│     └── ERC-721: Individual NFT freeze                      │
+│     └── ERC-1155: Entire batch freeze                       │
+│     └── ERC-20: Partial amount freeze                       │
+│                                                              │
+│  4. Compliance Rules (Always Active)                        │
+│     └── KYC/AML verification                                │
+│     └── Country restrictions                                │
+│     └── Balance limits                                      │
+│     └── Transfer limits                                     │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Usage Examples
+
+#### Pausing All Operations
+```solidity
+// Pause all token operations (emergency stop)
+token.pause();
+
+// Resume normal operations
+token.unpause();
+```
+
+#### Freezing Specific Accounts
+```solidity
+// Freeze a suspicious account
+token.setAddressFrozen(suspiciousAddress, true);
+
+// Unfreeze after investigation
+token.setAddressFrozen(suspiciousAddress, false);
+```
+
+#### Freezing Specific Assets
+```solidity
+// ERC-721: Freeze specific NFT
+nftToken.freezeToken(tokenId);
+
+// ERC-1155: Freeze entire batch
+multiToken.freezeBatch(batchId, true);
+
+// ERC-20: Freeze partial balance
+token.freezePartialTokens(address, amount);
+```
+
+### Emergency Procedures
+
+1. **Global Emergency Stop**: Use `pause()` to immediately halt all operations
+2. **Account Investigation**: Use `setAddressFrozen()` to freeze suspicious accounts
+3. **Asset Recovery**: Use `forcedTransfer()` for court-ordered transfers
+4. **Gradual Unfreezing**: Unfreeze accounts/tokens individually after review
+
+### Role Management
+
+- **AGENT_ROLE**: Operational control (pause, freeze, mint, burn, force transfers)
+- **ADMIN_ROLE**: Administrative control and configuration
+- **DEFAULT_ADMIN_ROLE**: Role management and critical functions
+
+To grant roles:
+```solidity
+token.grantRole(AGENT_ROLE, newAgentAddress);
+token.revokeRole(AGENT_ROLE, oldAgentAddress);
+```
 
 ## Security Features
 

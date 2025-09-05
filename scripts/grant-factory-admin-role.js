@@ -1,74 +1,109 @@
-const hre = require("hardhat");
+const { ethers } = require('hardhat');
+require('dotenv').config();
 
 async function main() {
-  console.log("=== Granting DEFAULT_ADMIN_ROLE to Factory on AssetRegistry ===\n");
-
-  // Contract addresses
-  const FACTORY_ADDRESS = "0x5aC1EB4BE5D56D0d0b37ac21E3A2362d028F7A70";
-  const ASSET_REGISTRY_ADDRESS = "0x04aA90cAaAc423a5a1A858EE863482cAFd0fEb5F";
-
-  // Get the AssetRegistry contract
-  const AssetRegistry = await hre.ethers.getContractAt(
-    "AssetRegistry",
-    ASSET_REGISTRY_ADDRESS
-  );
-
-  // Get DEFAULT_ADMIN_ROLE hash (it's 0x00000...)
-  const DEFAULT_ADMIN_ROLE = await AssetRegistry.DEFAULT_ADMIN_ROLE();
-  console.log("DEFAULT_ADMIN_ROLE hash:", DEFAULT_ADMIN_ROLE);
-
-  // Check if factory already has the role
-  const hasRole = await AssetRegistry.hasRole(DEFAULT_ADMIN_ROLE, FACTORY_ADDRESS);
-  
-  if (hasRole) {
-    console.log("✅ Factory already has DEFAULT_ADMIN_ROLE on AssetRegistry");
-    return;
-  }
-
-  console.log("❌ Factory does NOT have DEFAULT_ADMIN_ROLE on AssetRegistry");
-  console.log("Factory address:", FACTORY_ADDRESS);
-  console.log("AssetRegistry address:", ASSET_REGISTRY_ADDRESS);
-
-  // Get the signer
-  const [signer] = await hre.ethers.getSigners();
-  console.log("Current signer:", signer.address);
-
-  // Check if signer has DEFAULT_ADMIN_ROLE
-  const signerIsAdmin = await AssetRegistry.hasRole(DEFAULT_ADMIN_ROLE, signer.address);
-
-  if (!signerIsAdmin) {
-    console.log("❌ Current signer does NOT have DEFAULT_ADMIN_ROLE on AssetRegistry");
-    console.log("Cannot grant DEFAULT_ADMIN_ROLE without admin privileges");
+    const registryAddress = '0x83413e2C668c9249331Bc88D370655bb44527867';
+    const factoryAddress = '0x365086b093Eb31CD32653271371892136FcAb254';
     
-    console.log("\nPlease run this script with an account that has DEFAULT_ADMIN_ROLE");
-    process.exit(1);
-  }
-
-  console.log("✅ Current signer has DEFAULT_ADMIN_ROLE on AssetRegistry");
-  console.log("Granting DEFAULT_ADMIN_ROLE to factory contract...");
-
-  // Grant the role
-  const tx = await AssetRegistry.grantRole(DEFAULT_ADMIN_ROLE, FACTORY_ADDRESS);
-  console.log("Transaction sent:", tx.hash);
-  
-  // Wait for confirmation
-  await tx.wait();
-  console.log("Transaction confirmed!");
-
-  // Verify the role was granted
-  const hasRoleAfter = await AssetRegistry.hasRole(DEFAULT_ADMIN_ROLE, FACTORY_ADDRESS);
-  
-  if (hasRoleAfter) {
-    console.log("✅ DEFAULT_ADMIN_ROLE successfully granted to factory:", FACTORY_ADDRESS);
-    console.log("\nThe FinatradesTokenFactory can now authorize token contracts on the AssetRegistry");
-  } else {
-    console.log("❌ Failed to grant DEFAULT_ADMIN_ROLE");
-  }
+    console.log('Granting permissions to FinatradesTokenFactory...');
+    console.log('Asset Registry:', registryAddress);
+    console.log('Token Factory:', factoryAddress);
+    console.log('---');
+    
+    // Get signer
+    const [signer] = await ethers.getSigners();
+    console.log('Signer address:', signer.address);
+    
+    // Get AssetRegistry contract
+    const AssetRegistry = await ethers.getContractAt('AssetRegistry', registryAddress);
+    
+    // Define role constants
+    const DEFAULT_ADMIN_ROLE = '0x0000000000000000000000000000000000000000000000000000000000000000';
+    const ASSET_ADMIN_ROLE = ethers.keccak256(ethers.toUtf8Bytes('ASSET_ADMIN'));
+    
+    console.log('\nRole hashes:');
+    console.log('DEFAULT_ADMIN_ROLE:', DEFAULT_ADMIN_ROLE);
+    console.log('ASSET_ADMIN_ROLE:', ASSET_ADMIN_ROLE);
+    
+    // Check current permissions
+    console.log('\n--- Checking Current Permissions ---');
+    
+    const factoryHasDefaultAdmin = await AssetRegistry.hasRole(DEFAULT_ADMIN_ROLE, factoryAddress);
+    console.log('Factory has DEFAULT_ADMIN role:', factoryHasDefaultAdmin);
+    
+    const factoryHasAssetAdmin = await AssetRegistry.hasRole(ASSET_ADMIN_ROLE, factoryAddress);
+    console.log('Factory has ASSET_ADMIN role:', factoryHasAssetAdmin);
+    
+    // Check signer permissions
+    const signerHasDefaultAdmin = await AssetRegistry.hasRole(DEFAULT_ADMIN_ROLE, signer.address);
+    console.log('Signer has DEFAULT_ADMIN role:', signerHasDefaultAdmin);
+    
+    if (!signerHasDefaultAdmin) {
+        console.error('❌ Signer does not have DEFAULT_ADMIN role to grant permissions');
+        return;
+    }
+    
+    // Grant necessary roles to factory
+    const rolesToGrant = [];
+    
+    if (!factoryHasDefaultAdmin) {
+        rolesToGrant.push({
+            role: DEFAULT_ADMIN_ROLE,
+            name: 'DEFAULT_ADMIN'
+        });
+    }
+    
+    if (!factoryHasAssetAdmin) {
+        rolesToGrant.push({
+            role: ASSET_ADMIN_ROLE,
+            name: 'ASSET_ADMIN'
+        });
+    }
+    
+    if (rolesToGrant.length === 0) {
+        console.log('\n✅ Factory already has all necessary permissions');
+        return;
+    }
+    
+    console.log('\n--- Granting Roles ---');
+    
+    for (const roleInfo of rolesToGrant) {
+        console.log(`\nGranting ${roleInfo.name} role to factory...`);
+        
+        try {
+            const tx = await AssetRegistry.grantRole(roleInfo.role, factoryAddress);
+            console.log('Transaction sent:', tx.hash);
+            
+            const receipt = await tx.wait();
+            console.log('Transaction confirmed in block:', receipt.blockNumber);
+            
+            // Verify role was granted
+            const hasRole = await AssetRegistry.hasRole(roleInfo.role, factoryAddress);
+            console.log(`✅ ${roleInfo.name} role granted successfully:`, hasRole);
+            
+        } catch (error) {
+            console.error(`❌ Failed to grant ${roleInfo.name} role:`, error.reason || error.message);
+        }
+    }
+    
+    // Final verification
+    console.log('\n--- Final Permission Status ---');
+    
+    const finalDefaultAdmin = await AssetRegistry.hasRole(DEFAULT_ADMIN_ROLE, factoryAddress);
+    console.log('Factory has DEFAULT_ADMIN role:', finalDefaultAdmin);
+    
+    const finalAssetAdmin = await AssetRegistry.hasRole(ASSET_ADMIN_ROLE, factoryAddress);
+    console.log('Factory has ASSET_ADMIN role:', finalAssetAdmin);
+    
+    if (finalDefaultAdmin && finalAssetAdmin) {
+        console.log('\n🎉 FinatradesTokenFactory now has all necessary permissions!');
+        console.log('The factory can now deploy tokens and update asset records.');
+    }
 }
 
 main()
-  .then(() => process.exit(0))
-  .catch((error) => {
-    console.error(error);
-    process.exit(1);
-  });
+    .then(() => process.exit(0))
+    .catch(error => {
+        console.error(error);
+        process.exit(1);
+    });

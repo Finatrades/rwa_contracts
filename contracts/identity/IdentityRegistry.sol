@@ -20,9 +20,13 @@ contract IdentityRegistry is IIdentityRegistry, Initializable, AccessControlUpgr
     mapping(address => IIdentity) private _identities;
     mapping(address => uint16) private _countries;
     mapping(address => bool) private _hasIdentity;
+    mapping(uint16 => bool) private _blockedCountries;
     
     IClaimTopicsRegistry public topicsRegistry;
     address[] public investorsList;
+    
+    event CountryBlocked(uint16 indexed country, bool blocked);
+    event CountryRestrictionUpdated(uint16[] countries, bool[] blocked);
     
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() {
@@ -43,6 +47,43 @@ contract IdentityRegistry is IIdentityRegistry, Initializable, AccessControlUpgr
         topicsRegistry = IClaimTopicsRegistry(_claimTopicsRegistry);
     }
     
+    /**
+     * @notice Sets whether a country is blocked from KYC registration
+     * @param _country The country code to block/unblock
+     * @param _blocked Whether the country should be blocked
+     */
+    function setCountryBlocked(uint16 _country, bool _blocked) external onlyRole(OWNER_ROLE) {
+        _blockedCountries[_country] = _blocked;
+        emit CountryBlocked(_country, _blocked);
+    }
+    
+    /**
+     * @notice Batch update country restrictions
+     * @param _countryList Array of country codes
+     * @param _blockedList Array of blocked status for each country
+     */
+    function batchSetCountryRestrictions(
+        uint16[] calldata _countryList,
+        bool[] calldata _blockedList
+    ) external onlyRole(OWNER_ROLE) {
+        require(_countryList.length == _blockedList.length, "Arrays length mismatch");
+        
+        for (uint256 i = 0; i < _countryList.length; i++) {
+            _blockedCountries[_countryList[i]] = _blockedList[i];
+        }
+        
+        emit CountryRestrictionUpdated(_countryList, _blockedList);
+    }
+    
+    /**
+     * @notice Checks if a country is blocked
+     * @param _country The country code to check
+     * @return Whether the country is blocked
+     */
+    function isCountryBlocked(uint16 _country) external view returns (bool) {
+        return _blockedCountries[_country];
+    }
+    
     function registerIdentity(
         address _userAddress,
         IIdentity _identity,
@@ -50,6 +91,7 @@ contract IdentityRegistry is IIdentityRegistry, Initializable, AccessControlUpgr
     ) external override onlyRole(AGENT_ROLE) {
         require(!_hasIdentity[_userAddress], "Identity already registered");
         require(address(_identity) != address(0), "Invalid identity address");
+        require(!_blockedCountries[_country], "Country is blocked from KYC registration");
         
         _identities[_userAddress] = _identity;
         _countries[_userAddress] = _country;
@@ -92,6 +134,7 @@ contract IdentityRegistry is IIdentityRegistry, Initializable, AccessControlUpgr
     
     function updateCountry(address _userAddress, uint16 _country) external override onlyRole(AGENT_ROLE) {
         require(_hasIdentity[_userAddress], "No identity registered");
+        require(!_blockedCountries[_country], "Country is blocked from KYC registration");
         
         _countries[_userAddress] = _country;
         emit CountryUpdated(_userAddress, _country);
@@ -106,6 +149,8 @@ contract IdentityRegistry is IIdentityRegistry, Initializable, AccessControlUpgr
         require(_userAddresses.length == _countryCodes.length, "Arrays length mismatch");
         
         for (uint256 i = 0; i < _userAddresses.length; i++) {
+            require(!_blockedCountries[_countryCodes[i]], "Country is blocked from KYC registration");
+            
             if (!_hasIdentity[_userAddresses[i]]) {
                 _identities[_userAddresses[i]] = _identityContracts[i];
                 _countries[_userAddresses[i]] = _countryCodes[i];
